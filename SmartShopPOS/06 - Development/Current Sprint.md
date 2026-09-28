@@ -1,9 +1,11 @@
 # Current Sprint
 
-## Milestone 0 - Architecture & Foundation
+## Milestone 1 - .NET Solution Foundation
 
-**Current task:** Project Constitution & Documentation Foundation
+**Current task:** .NET Solution Foundation
 
-**Status:** In progress
+**Status:** Complete
 
-**Next planned milestone:** .NET Solution Foundation
+**Current implementation:** Solution, layered project structure, PostgreSQL/EF Core foundation, Swagger/OpenAPI, baseline health checks, and unit/integration test scaffolding are established.
+
+**Next planned milestone:** Domain and application boundaries

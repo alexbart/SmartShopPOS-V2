@@ -17,9 +17,9 @@ The platform is designed to grow toward multiple users, terminals, branches, inv
 
 ## Status
 
-- **Implemented:** Project documentation foundation and initial architectural decisions.
-- **In development:** Milestone 0, Architecture & Foundation; Project Constitution & Documentation Foundation.
-- **Planned:** .NET solution foundation, API and domain boundaries, PostgreSQL/EF Core, authentication and authorization, catalog, sales, inventory, accounting, payments, integrations, reporting, and hardware agent.
+- **Implemented:** Project documentation foundation, initial architectural decisions, and the .NET solution foundation.
+- **In development:** Domain and application boundaries.
+- **Planned:** Authentication and authorization, catalog, sales, inventory, accounting, payments, integrations, reporting, and hardware agent.
 
 ## Planned Modules
 
