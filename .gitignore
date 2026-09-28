@@ -1,0 +1,40 @@
+# .NET
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio / VS Code
+.vs/
+*.user
+*.suo
+
+# Test results
+TestResults/
+coverage/
+
+# Node
+node_modules/
+dist/
+build/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Local databases / development files
+*.db
+*.db-shm
+*.db-wal
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Obsidian workspace cache
+SmartShopPOS/.obsidian/workspace.json
+SmartShopPOS/.obsidian/workspace-mobile.json
