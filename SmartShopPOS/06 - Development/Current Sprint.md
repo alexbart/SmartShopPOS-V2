@@ -1,13 +1,13 @@
 # Current Sprint
 
-## Milestone 2 - Organization, User & RBAC Foundation
+## Milestone 3 - Authentication and Session Foundation
 
-**Current task:** Organization, User & RBAC Foundation
+**Current task:** Authentication and session foundation
 
-**Status:** Implementation complete; PostgreSQL integration verification pending valid local credentials.
+**Status:** Implementation complete for the initial auth foundation; PostgreSQL-backed verification remains dependent on valid local credentials.
 
-**Current implementation:** Organization, user, organization-scoped role, global permission, user-role, and role-permission domain/persistence models; tenant-safe foreign keys and uniqueness constraints; initial permission metadata; `CreateOrganizationIdentity` migration; and domain/model/integration tests.
+**Current implementation:** Cookie-based authentication, PBKDF2 password hashing, server-side session tracking with revocation and expiration, current-user abstraction, login/logout/me endpoints, and auth-session persistence model. The project continues to preserve organization-scoped identity and permission-based authorization without adding a second RBAC system.
 
-**Deferred:** Login, password hashing implementation, tokens/sessions, authenticated `me` endpoint, branch and terminal access, and applying/verifying the migration against PostgreSQL.
+**Deferred:** Full API-level verification against a live PostgreSQL database when a valid local `ConnectionStrings__DefaultConnection` is active; richer branch/terminal access, audit wiring, and later authorization policies remain future work.
 
-**Next planned milestone:** Authentication foundation
+**Next planned milestone:** Expand authentication into broader application authorization and audit usage.

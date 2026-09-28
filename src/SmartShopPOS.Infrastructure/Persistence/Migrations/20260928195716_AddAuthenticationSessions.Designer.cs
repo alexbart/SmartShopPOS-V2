@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SmartShopPOS.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using SmartShopPOS.Infrastructure.Persistence;
 namespace SmartShopPOS.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(SmartShopPosDbContext))]
-    partial class SmartShopPosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260928195716_AddAuthenticationSessions")]
+    partial class AddAuthenticationSessions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

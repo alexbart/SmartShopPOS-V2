@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SmartShopPOS.Contracts\SmartShopPOS.Contracts.csproj" />
     <ProjectReference Include="..\SmartShopPOS.Domain\SmartShopPOS.Domain.csproj" />
   </ItemGroup>
 
