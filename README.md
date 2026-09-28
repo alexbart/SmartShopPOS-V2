@@ -17,9 +17,9 @@ The platform is designed to grow toward multiple users, terminals, branches, inv
 
 ## Status
 
-- **Implemented:** Project documentation foundation, initial architectural decisions, and the .NET solution foundation.
-- **In development:** Domain and application boundaries.
-- **Planned:** Authentication and authorization, catalog, sales, inventory, accounting, payments, integrations, reporting, and hardware agent.
+- **Implemented:** Project documentation and .NET solution foundations, organization/user/RBAC domain and PostgreSQL persistence model, initial permission catalog, and `CreateOrganizationIdentity` migration.
+- **In development:** Authentication and login/session design; PostgreSQL migration application and database-backed identity verification require valid local credentials.
+- **Planned:** Branches, terminals, catalog, sales, inventory, accounting, payments, integrations, reporting, and hardware agent.
 
 ## Planned Modules
 

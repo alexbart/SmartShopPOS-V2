@@ -21,6 +21,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\SmartShopPOS.Application\SmartShopPOS.Application.csproj" />
     <ProjectReference Include="..\..\src\SmartShopPOS.Domain\SmartShopPOS.Domain.csproj" />
+    <ProjectReference Include="..\..\src\SmartShopPOS.Infrastructure\SmartShopPOS.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

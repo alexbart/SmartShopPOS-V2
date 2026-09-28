@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using SmartShopPOS.Api.Health;
+using SmartShopPOS.Application.Identity;
+using SmartShopPOS.Infrastructure.Identity;
 using SmartShopPOS.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +16,8 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddDbContext<SmartShopPosDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<IPermissionChecker, EfCorePermissionChecker>();
+builder.Services.AddScoped<IIdentityWriter, EfCoreIdentityWriter>();
 
 var app = builder.Build();
 

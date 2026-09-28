@@ -1,11 +1,13 @@
 # Current Sprint
 
-## Milestone 1 - .NET Solution Foundation
+## Milestone 2 - Organization, User & RBAC Foundation
 
-**Current task:** .NET Solution Foundation
+**Current task:** Organization, User & RBAC Foundation
 
-**Status:** Complete
+**Status:** Implementation complete; PostgreSQL integration verification pending valid local credentials.
 
-**Current implementation:** Solution, layered project structure, PostgreSQL/EF Core foundation, Swagger/OpenAPI, baseline health checks, and unit/integration test scaffolding are established.
+**Current implementation:** Organization, user, organization-scoped role, global permission, user-role, and role-permission domain/persistence models; tenant-safe foreign keys and uniqueness constraints; initial permission metadata; `CreateOrganizationIdentity` migration; and domain/model/integration tests.
 
-**Next planned milestone:** Domain and application boundaries
+**Deferred:** Login, password hashing implementation, tokens/sessions, authenticated `me` endpoint, branch and terminal access, and applying/verifying the migration against PostgreSQL.
+
+**Next planned milestone:** Authentication foundation
