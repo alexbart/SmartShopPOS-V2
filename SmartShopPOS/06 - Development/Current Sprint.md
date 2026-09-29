@@ -39,3 +39,13 @@
 **Current implementation:** Products remain organization-scoped. Balances and movements are branch-scoped with tenant-safe composite foreign keys, uniqueness and quantity constraints, append-only movement APIs, movement direction mapping, opening balance and reasoned adjustment operations, and transactional updates. The branch context and inventory-specific permissions are required for all operations.
 
 **Deferred:** Purchasing, sales posting, stock transfers, stocktakes, inventory valuation, costing, unit conversion, and movement reversal workflows.
+
+## Milestone 9 - Supplier Foundation
+
+**Current task:** Organization-scoped supplier master data (Prompt 010)
+
+**Status:** Supplier entity, tenant-scoped CRUD service/API, permissions, migration, Swagger coverage, and domain/PostgreSQL tests are implemented.
+
+**Current implementation:** Supplier codes are normalized and unique within an organization. Suppliers are logically deactivated. Supplier operations use authenticated organization context only and do not require a selected branch.
+
+**Deferred:** Purchase orders and lines, goods receipts, supplier balances, accounts payable, payments, and receipt stock movements.

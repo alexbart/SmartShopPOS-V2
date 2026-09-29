@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using SmartShopPOS.Domain.Identity;
@@ -52,7 +53,12 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
             (Path: "/api/branches/{branchId}/users/{userId}", Method: "delete"),
             (Path: "/api/me/branches", Method: "get"),
             (Path: "/api/me/branch-context", Method: "get"),
-            (Path: "/api/me/branch-context", Method: "post")
+            (Path: "/api/me/branch-context", Method: "post"),
+            (Path: "/api/v1/suppliers", Method: "get"),
+            (Path: "/api/v1/suppliers", Method: "post"),
+            (Path: "/api/v1/suppliers/{supplierId}", Method: "get"),
+            (Path: "/api/v1/suppliers/{supplierId}", Method: "put"),
+            (Path: "/api/v1/suppliers/{supplierId}", Method: "delete")
         };
         foreach (var protectedOperation in protectedOperations)
         {
@@ -65,11 +71,31 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
             Assert.True(securityRequirement.TryGetProperty("sessionCookie", out _));
         }
 
+        var supplierOperations = document.RootElement.GetProperty("paths");
+        Assert.True(supplierOperations.GetProperty("/api/v1/suppliers").GetProperty("get")
+            .GetProperty("responses").TryGetProperty("200", out _));
+        Assert.True(supplierOperations.GetProperty("/api/v1/suppliers").GetProperty("post")
+            .GetProperty("responses").TryGetProperty("201", out _));
+        var supplierRequest = document.RootElement.GetProperty("components").GetProperty("schemas")
+            .GetProperty("SupplierUpsertRequest").GetProperty("properties");
+        Assert.True(supplierRequest.TryGetProperty("code", out _));
+        Assert.True(supplierRequest.TryGetProperty("name", out _));
+        Assert.False(supplierRequest.TryGetProperty("organizationId", out _));
+
         Assert.False(document.RootElement
             .GetProperty("paths")
             .GetProperty("/api/auth/login")
             .GetProperty("post")
             .TryGetProperty("security", out _));
+
+        using var anonymousList = await client.GetAsync("/api/v1/suppliers");
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousList.StatusCode);
+        using var anonymousCreate = await client.PostAsJsonAsync("/api/v1/suppliers", new
+        {
+            code = "SUP-001",
+            name = "Supplier"
+        });
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousCreate.StatusCode);
     }
 }
 

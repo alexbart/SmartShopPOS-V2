@@ -21,6 +21,8 @@ Organizations own branches, and branches own registered terminals. Branch manage
 
 Products remain organization-level master data. Inventory is branch-level operational data keyed by organization, branch, and product. `InventoryBalance` is the current quantity projection; append-only `StockMovement` records explain each change. Composite foreign keys enforce tenant consistency, while transactional stock operations keep movement and balance updates atomic. See [[Inventory & Stock Ledger]].
 
+Suppliers are organization-scoped master data independent of branch context. Supplier management does not create purchasing documents or inventory movements; later purchasing slices will reference suppliers from purchase orders and goods receipts. See [[Suppliers]].
+
 ## Operational Authorization Scopes
 
 These scopes are separate and must not substitute for each other:
