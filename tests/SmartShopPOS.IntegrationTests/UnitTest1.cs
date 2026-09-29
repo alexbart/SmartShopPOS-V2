@@ -44,6 +44,27 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
 
         Assert.True(requirement.TryGetProperty("authenticationCookie", out _));
         Assert.True(requirement.TryGetProperty("sessionCookie", out _));
+
+        var protectedOperations = new[]
+        {
+            (Path: "/api/branches/{branchId}/users", Method: "get"),
+            (Path: "/api/branches/{branchId}/users", Method: "post"),
+            (Path: "/api/branches/{branchId}/users/{userId}", Method: "delete"),
+            (Path: "/api/me/branches", Method: "get"),
+            (Path: "/api/me/branch-context", Method: "get"),
+            (Path: "/api/me/branch-context", Method: "post")
+        };
+        foreach (var protectedOperation in protectedOperations)
+        {
+            var securityRequirement = document.RootElement
+                .GetProperty("paths")
+                .GetProperty(protectedOperation.Path)
+                .GetProperty(protectedOperation.Method)
+                .GetProperty("security")[0];
+            Assert.True(securityRequirement.TryGetProperty("authenticationCookie", out _));
+            Assert.True(securityRequirement.TryGetProperty("sessionCookie", out _));
+        }
+
         Assert.False(document.RootElement
             .GetProperty("paths")
             .GetProperty("/api/auth/login")

@@ -17,7 +17,7 @@ The platform is designed to grow toward multiple users, terminals, branches, inv
 
 ## Status
 
-- **Implemented:** Project documentation and .NET solution foundations, organization/user/RBAC domain, cookie-based authentication/session foundation, branch/terminal domain and organization-scoped APIs, permission catalog, and PostgreSQL migrations.
+- **Implemented:** Project documentation and .NET solution foundations, organization/user/RBAC domain, cookie-based authentication/session foundation, branch/terminal domain and APIs, explicit user-branch access, server-side operational branch context, permission catalog, and PostgreSQL migrations.
 - **Next:** Catalog, sales, inventory, accounting, payments, integrations, reporting, and hardware agent.
 
 ## Planned Modules

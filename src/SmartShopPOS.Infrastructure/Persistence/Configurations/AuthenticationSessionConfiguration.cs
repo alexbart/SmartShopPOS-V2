@@ -19,6 +19,7 @@ public sealed class AuthenticationSessionConfiguration : IEntityTypeConfiguratio
         builder.Property(session => session.LastUsedAt).IsRequired();
         builder.HasIndex(session => session.UserId).HasDatabaseName("ix_authentication_sessions_user_id");
         builder.HasIndex(session => session.OrganizationId).HasDatabaseName("ix_authentication_sessions_organization_id");
+        builder.HasIndex(session => session.SelectedBranchId).HasDatabaseName("ix_authentication_sessions_selected_branch_id");
         builder.HasOne(session => session.User)
             .WithMany()
             .HasForeignKey(session => session.UserId)
@@ -26,6 +27,11 @@ public sealed class AuthenticationSessionConfiguration : IEntityTypeConfiguratio
         builder.HasOne(session => session.Organization)
             .WithMany()
             .HasForeignKey(session => session.OrganizationId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Branch>()
+            .WithMany()
+            .HasForeignKey(session => new { session.OrganizationId, session.SelectedBranchId })
+            .HasPrincipalKey(branch => new { branch.OrganizationId, branch.Id })
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

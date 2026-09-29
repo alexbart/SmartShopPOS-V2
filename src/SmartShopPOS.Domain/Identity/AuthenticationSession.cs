@@ -41,6 +41,7 @@ public sealed class AuthenticationSession : Entity
     public Guid SessionId { get; private set; }
     public Guid UserId { get; private set; }
     public Guid OrganizationId { get; private set; }
+    public Guid? SelectedBranchId { get; private set; }
     public string TokenHash { get; private set; } = string.Empty;
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset ExpiresAt { get; private set; }
@@ -67,6 +68,17 @@ public sealed class AuthenticationSession : Entity
         if (!IsRevoked)
         {
             RevokedAt = DateTimeOffset.UtcNow;
+            SelectedBranchId = null;
         }
+    }
+
+    public void SetSelectedBranch(Guid? branchId)
+    {
+        if (branchId == Guid.Empty)
+        {
+            throw new DomainException("A selected branch identifier cannot be empty.");
+        }
+
+        SelectedBranchId = branchId;
     }
 }

@@ -19,6 +19,7 @@ public class SmartShopPosDbContext : DbContext
     public DbSet<AuthenticationSession> AuthenticationSessions => Set<AuthenticationSession>();
     public DbSet<Branch> Branches => Set<Branch>();
     public DbSet<Terminal> Terminals => Set<Terminal>();
+    public DbSet<UserBranch> UserBranches => Set<UserBranch>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

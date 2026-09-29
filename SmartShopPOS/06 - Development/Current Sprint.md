@@ -1,13 +1,13 @@
 # Current Sprint
 
-## Milestone 4 - Branch and Terminal Foundation
+## Milestone 5 - User/Branch Access and Operational Context
 
-**Current task:** Branch and terminal foundation
+**Current task:** User/branch access and operational branch context
 
-**Status:** Initial branch and terminal domain, tenant-safe PostgreSQL model, permission-scoped APIs, and PostgreSQL-backed tests are implemented.
+**Status:** Explicit user-to-branch assignments, tenant-safe persistence, permission-scoped APIs, and per-session operational context are implemented with PostgreSQL-backed tests.
 
-**Current implementation:** Branches are organization-scoped; terminals are branch-scoped and retain the organization identifier needed for a composite tenant foreign key. Endpoints list/create branches and list/create terminals under a branch, with organization derived from the authenticated user and authorization based on global permission keys.
+**Current implementation:** Assignment history is retained through deactivation and duplicate active assignments are database-constrained. `/api/me/branches` lists active assigned branches. `/api/me/branch-context` selects/reads a branch stored on the server-side authentication session; every context operation validates identity, tenant, active user/branch/assignment, and permission.
 
-**Deferred:** Branch/terminal update and deactivation endpoints, branch-scoped user access, audit wiring, hardware integration, and operational workstation behavior.
+**Deferred:** Branch-scoped user access in future operational APIs, branch/terminal update and deactivation endpoints, audit wiring, terminal context, hardware integration, and operational workstation behavior.
 
-**Next planned milestone:** Build the product catalog on the organization/branch/terminal foundation.
+**Next planned milestone:** Build the product catalog on the organization/branch/terminal and user-access foundation.

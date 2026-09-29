@@ -21,7 +21,11 @@ public sealed class PermissionConfiguration : IEntityTypeConfiguration<Permissio
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af0b"), "terminals.view", "View terminals"),
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af0c"), "terminals.create", "Create terminals"),
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af0d"), "terminals.update", "Update terminals"),
-        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af0e"), "terminals.deactivate", "Deactivate terminals")
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af0e"), "terminals.deactivate", "Deactivate terminals"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af0f"), "user_branch_assignments.view", "View user branch assignments"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af10"), "user_branch_assignments.create", "Assign users to branches"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af11"), "user_branch_assignments.deactivate", "Deactivate user branch assignments"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af12"), "branch_context.select", "Select operational branch context")
     ];
 
     public void Configure(EntityTypeBuilder<Permission> builder)

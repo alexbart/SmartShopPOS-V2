@@ -10,11 +10,14 @@ using SmartShopPOS.Application.Branches;
 using SmartShopPOS.Api.Branches;
 using SmartShopPOS.Api.Health;
 using SmartShopPOS.Application.Identity;
+using SmartShopPOS.Application.UserBranches;
 using SmartShopPOS.Contracts.Branches;
 using SmartShopPOS.Contracts.Authentication;
+using SmartShopPOS.Contracts.UserBranches;
 using SmartShopPOS.Infrastructure.Branches;
 using SmartShopPOS.Infrastructure.Identity;
 using SmartShopPOS.Infrastructure.Persistence;
+using SmartShopPOS.Infrastructure.UserBranches;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +51,8 @@ builder.Services.AddScoped<IPasswordHasher, Pbkdf2PasswordHasher>();
 builder.Services.AddScoped<SmartShopPOS.Application.Identity.IAuthenticationService, SmartShopPOS.Infrastructure.Identity.AuthenticationService>();
 builder.Services.AddScoped<ICurrentUser, CurrentUserAccessor>();
 builder.Services.AddScoped<IBranchTerminalService, BranchTerminalService>();
+builder.Services.AddScoped<IUserBranchAssignmentService, UserBranchAssignmentService>();
+builder.Services.AddScoped<IBranchAccessService, BranchAccessService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -236,6 +241,113 @@ branches.MapPost("/{branchId:guid}/terminals", async (
 .ProducesProblem(StatusCodes.Status404NotFound)
 .ProducesProblem(StatusCodes.Status409Conflict);
 
+var branchUsers = app.MapGroup("/api/branches/{branchId:guid}/users")
+    .RequireAuthorization()
+    .WithTags("User branch assignments");
+
+branchUsers.MapGet("", async (
+    Guid branchId,
+    IUserBranchAssignmentService service,
+    CancellationToken cancellationToken) =>
+{
+    var result = await service.GetAssignmentsAsync(branchId, cancellationToken);
+    return result.IsSuccess ? Results.Ok(result.Value) : ToUserBranchFailureResult(result.Error, result.Message);
+})
+.WithName("ListBranchUsers")
+.Produces<IReadOnlyList<UserBranchAssignmentResponse>>(StatusCodes.Status200OK)
+.ProducesProblem(StatusCodes.Status401Unauthorized)
+.ProducesProblem(StatusCodes.Status403Forbidden)
+.ProducesProblem(StatusCodes.Status404NotFound);
+
+branchUsers.MapPost("", async (
+    Guid branchId,
+    AssignUserToBranchRequest request,
+    IUserBranchAssignmentService service,
+    CancellationToken cancellationToken) =>
+{
+    if (request is null)
+    {
+        return Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: "Invalid request", detail: "A user assignment request is required.");
+    }
+
+    var result = await service.AssignAsync(branchId, request.UserId, cancellationToken);
+    return result.IsSuccess
+        ? Results.Created($"/api/branches/{branchId}/users/{request.UserId}", result.Value)
+        : ToUserBranchFailureResult(result.Error, result.Message);
+})
+.WithName("AssignUserToBranch")
+.Produces<UserBranchAssignmentResponse>(StatusCodes.Status201Created)
+.ProducesProblem(StatusCodes.Status400BadRequest)
+.ProducesProblem(StatusCodes.Status401Unauthorized)
+.ProducesProblem(StatusCodes.Status403Forbidden)
+.ProducesProblem(StatusCodes.Status404NotFound)
+.ProducesProblem(StatusCodes.Status409Conflict);
+
+branchUsers.MapDelete("/{userId:guid}", async (
+    Guid branchId,
+    Guid userId,
+    IUserBranchAssignmentService service,
+    CancellationToken cancellationToken) =>
+{
+    var result = await service.DeactivateAsync(branchId, userId, cancellationToken);
+    return result.IsSuccess ? Results.NoContent() : ToUserBranchFailureResult(result.Error, result.Message);
+})
+.WithName("DeactivateBranchUser")
+.Produces(StatusCodes.Status204NoContent)
+.ProducesProblem(StatusCodes.Status401Unauthorized)
+.ProducesProblem(StatusCodes.Status403Forbidden)
+.ProducesProblem(StatusCodes.Status404NotFound);
+
+var me = app.MapGroup("/api/me")
+    .RequireAuthorization()
+    .WithTags("Operational branch context");
+
+me.MapGet("/branches", async (IBranchAccessService service, CancellationToken cancellationToken) =>
+{
+    var result = await service.GetAccessibleBranchesAsync(cancellationToken);
+    return result.IsSuccess ? Results.Ok(result.Value) : ToUserBranchFailureResult(result.Error, result.Message);
+})
+.WithName("ListMyBranches")
+.Produces<IReadOnlyList<AccessibleBranchResponse>>(StatusCodes.Status200OK)
+.ProducesProblem(StatusCodes.Status401Unauthorized)
+.ProducesProblem(StatusCodes.Status403Forbidden);
+
+me.MapGet("/branch-context", async (IBranchAccessService service, CancellationToken cancellationToken) =>
+{
+    var result = await service.GetCurrentContextAsync(cancellationToken);
+    return !result.IsSuccess
+        ? ToUserBranchFailureResult(result.Error, result.Message)
+        : result.Value is null ? Results.NoContent() : Results.Ok(result.Value);
+})
+.WithName("GetMyBranchContext")
+.Produces<BranchContextResponse>(StatusCodes.Status200OK)
+.Produces(StatusCodes.Status204NoContent)
+.ProducesProblem(StatusCodes.Status401Unauthorized)
+.ProducesProblem(StatusCodes.Status403Forbidden);
+
+me.MapPost("/branch-context", async (
+    SelectBranchContextRequest request,
+    IBranchAccessService service,
+    CancellationToken cancellationToken) =>
+{
+    if (request is null)
+    {
+        return Results.Problem(statusCode: StatusCodes.Status400BadRequest, title: "Invalid request", detail: "A branch context request is required.");
+    }
+
+    var result = await service.SelectContextAsync(request.BranchId, cancellationToken);
+    return result.IsSuccess
+        ? Results.Ok(result.Value)
+        : ToUserBranchFailureResult(result.Error, result.Message);
+})
+.WithName("SelectMyBranchContext")
+.Produces<BranchContextResponse>(StatusCodes.Status200OK)
+.ProducesProblem(StatusCodes.Status400BadRequest)
+.ProducesProblem(StatusCodes.Status401Unauthorized)
+.ProducesProblem(StatusCodes.Status403Forbidden)
+.ProducesProblem(StatusCodes.Status404NotFound)
+.ProducesProblem(StatusCodes.Status409Conflict);
+
 app.Run();
 
 static IResult ToFailureResult(BranchTerminalError error, string? message)
@@ -246,6 +358,20 @@ static IResult ToFailureResult(BranchTerminalError error, string? message)
         BranchTerminalError.Forbidden => (StatusCodes.Status403Forbidden, "Permission denied"),
         BranchTerminalError.NotFound => (StatusCodes.Status404NotFound, "Resource not found"),
         BranchTerminalError.Conflict => (StatusCodes.Status409Conflict, "Resource conflict"),
+        _ => (StatusCodes.Status400BadRequest, "Invalid request")
+    };
+
+    return Results.Problem(statusCode: statusCode, title: title, detail: message);
+}
+
+static IResult ToUserBranchFailureResult(UserBranchError error, string? message)
+{
+    var (statusCode, title) = error switch
+    {
+        UserBranchError.Unauthenticated => (StatusCodes.Status401Unauthorized, "Authentication required"),
+        UserBranchError.Forbidden => (StatusCodes.Status403Forbidden, "Permission denied"),
+        UserBranchError.NotFound => (StatusCodes.Status404NotFound, "Resource not found"),
+        UserBranchError.Conflict => (StatusCodes.Status409Conflict, "Resource conflict"),
         _ => (StatusCodes.Status400BadRequest, "Invalid request")
     };
 

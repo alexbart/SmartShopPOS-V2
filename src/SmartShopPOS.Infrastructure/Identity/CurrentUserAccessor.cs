@@ -30,5 +30,14 @@ public sealed class CurrentUserAccessor(IHttpContextAccessor httpContextAccessor
         }
     }
 
+    public Guid? SessionId
+    {
+        get
+        {
+            var value = httpContextAccessor.HttpContext?.User?.FindFirst("session_id")?.Value;
+            return Guid.TryParse(value, out var sessionId) ? sessionId : null;
+        }
+    }
+
     public string? Email => httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value;
 }
