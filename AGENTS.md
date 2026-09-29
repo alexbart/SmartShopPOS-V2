@@ -33,6 +33,9 @@ Expected business areas include Sales/POS, Products/Catalog, Inventory, Purchase
 - Treat audit logging as a first-class requirement with actor, action, time, entity/reference, terminal, and reason where relevant.
 - Use permission-based authorization, validate external input, and never commit secrets, tokens, credentials, or private keys.
 - Expose a REST API with correct HTTP status codes. Establish Swagger/OpenAPI when API implementation begins.
+- Version public API routes by major version using `/api/v1/...`; document the active version in OpenAPI, preserve released contracts, and introduce breaking changes only in a new major version. Current unversioned routes are pre-stable and must be versioned before external consumers depend on them.
+- Keep authorization scopes distinct: organization tenancy is not branch operational context, and branch context is not terminal context. Every branch-scoped application operation must use the authenticated organization, obtain the selected branch from server-side operational context, call `IBranchAccessService.CanOperateInBranchAsync` with the required permission, and constrain database reads/writes by both organization and branch. Never trust an organization or branch ID from a request as authorization.
+- Do not treat organization-wide permission as implicit access to every branch. Branch access requires an active assignment unless a separately approved permission-based global-access policy is introduced.
 - Use structured logging without passwords, tokens, payment secrets, or unnecessary sensitive personal information.
 - Treat PostgreSQL constraints as part of correctness; do not rely only on application validation.
 - Keep M-Pesa and eTIMS behind provider/integration boundaries such as `IPaymentProvider` and `IElectronicTaxProvider`.

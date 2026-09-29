@@ -19,6 +19,22 @@ The browser is the POS and management experience. The API owns application acces
 
 Organizations own branches, and branches own registered terminals. Branch management derives organization scope from the authenticated user. A terminal also stores `OrganizationId` so a composite foreign key can enforce that its branch belongs to the same organization.
 
+## Operational Authorization Scopes
+
+These scopes are separate and must not substitute for each other:
+
+```text
+Organization scope
+    != Branch operational scope
+    != Terminal scope
+```
+
+Organization scope is derived from the authenticated identity and limits tenant-owned records. Branch-operational operations additionally require the active server-side branch context and `IBranchAccessService.CanOperateInBranchAsync` with the operation's permission; database queries and mutations must include both organization and branch. Client-supplied IDs are selectors only. Terminal context is a later layer and must not be inferred from branch access.
+
+## API Versioning
+
+Public HTTP APIs use major URI versions such as `/api/v1/...`, with version-specific OpenAPI documents. Released versions keep backward-compatible contracts; breaking changes require a new major version. The existing unversioned routes predate this policy and are pre-stable: introduce the versioned routes before external clients depend on them, and document any compatibility period if old routes must remain available.
+
 ## Eventual Hardware Architecture
 
 ```text

@@ -20,6 +20,11 @@ public class SmartShopPosDbContext : DbContext
     public DbSet<Branch> Branches => Set<Branch>();
     public DbSet<Terminal> Terminals => Set<Terminal>();
     public DbSet<UserBranch> UserBranches => Set<UserBranch>();
+    public DbSet<Product> Products => Set<Product>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Brand> Brands => Set<Brand>();
+    public DbSet<UnitOfMeasure> UnitsOfMeasure => Set<UnitOfMeasure>();
+    public DbSet<TaxCategory> TaxCategories => Set<TaxCategory>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

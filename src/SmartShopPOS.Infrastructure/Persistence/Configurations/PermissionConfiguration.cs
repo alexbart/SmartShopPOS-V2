@@ -25,7 +25,27 @@ public sealed class PermissionConfiguration : IEntityTypeConfiguration<Permissio
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af0f"), "user_branch_assignments.view", "View user branch assignments"),
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af10"), "user_branch_assignments.create", "Assign users to branches"),
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af11"), "user_branch_assignments.deactivate", "Deactivate user branch assignments"),
-        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af12"), "branch_context.select", "Select operational branch context")
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af12"), "branch_context.select", "Select operational branch context"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af13"), "products.view", "View products"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af14"), "products.create", "Create products"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af15"), "products.update", "Update products"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af16"), "products.deactivate", "Deactivate products"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af17"), "categories.view", "View categories"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af18"), "categories.create", "Create categories"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af19"), "categories.update", "Update categories"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af1a"), "categories.deactivate", "Deactivate categories"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af1b"), "brands.view", "View brands"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af1c"), "brands.create", "Create brands"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af1d"), "brands.update", "Update brands"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af1e"), "brands.deactivate", "Deactivate brands"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af1f"), "units.view", "View units"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af20"), "units.create", "Create units"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af21"), "units.update", "Update units"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af22"), "units.deactivate", "Deactivate units"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af23"), "tax_categories.view", "View tax categories"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af24"), "tax_categories.create", "Create tax categories"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af25"), "tax_categories.update", "Update tax categories"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af26"), "tax_categories.deactivate", "Deactivate tax categories")
     ];
 
     public void Configure(EntityTypeBuilder<Permission> builder)
