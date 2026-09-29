@@ -1,0 +1,17 @@
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  SmartShopPOS.Contracts -> C:\Users\Alex Kiprop\Desktop\SmartShopPOS\src\SmartShopPOS.Contracts\bin\Debug\net10.0\SmartShopPOS.Contracts.dll
+  SmartShopPOS.Domain -> C:\Users\Alex Kiprop\Desktop\SmartShopPOS\src\SmartShopPOS.Domain\bin\Debug\net10.0\SmartShopPOS.Domain.dll
+  SmartShopPOS.Application -> C:\Users\Alex Kiprop\Desktop\SmartShopPOS\src\SmartShopPOS.Application\bin\Debug\net10.0\SmartShopPOS.Application.dll
+  SmartShopPOS.Infrastructure -> C:\Users\Alex Kiprop\Desktop\SmartShopPOS\src\SmartShopPOS.Infrastructure\bin\Debug\net10.0\SmartShopPOS.Infrastructure.dll
+  SmartShopPOS.UnitTests -> C:\Users\Alex Kiprop\Desktop\SmartShopPOS\tests\SmartShopPOS.UnitTests\bin\Debug\net10.0\SmartShopPOS.UnitTests.dll
+Test run for C:\Users\Alex Kiprop\Desktop\SmartShopPOS\tests\SmartShopPOS.UnitTests\bin\Debug\net10.0\SmartShopPOS.UnitTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    26, Skipped:     0, Total:    26, Duration: 1 s - SmartShopPOS.UnitTests.dll (net10.0)
+  SmartShopPOS.Api -> C:\Users\Alex Kiprop\Desktop\SmartShopPOS\src\SmartShopPOS.Api\bin\Debug\net10.0\SmartShopPOS.Api.dll
+  SmartShopPOS.IntegrationTests -> C:\Users\Alex Kiprop\Desktop\SmartShopPOS\tests\SmartShopPOS.IntegrationTests\bin\Debug\net10.0\SmartShopPOS.IntegrationTests.dll
+Test run for C:\Users\Alex Kiprop\Desktop\SmartShopPOS\tests\SmartShopPOS.IntegrationTests\bin\Debug\net10.0\SmartShopPOS.IntegrationTests.dll (.NETCoreApp,Version=v10.0)
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:     8, Skipped:     0, Total:     8, Duration: 9 s - SmartShopPOS.IntegrationTests.dll (net10.0)

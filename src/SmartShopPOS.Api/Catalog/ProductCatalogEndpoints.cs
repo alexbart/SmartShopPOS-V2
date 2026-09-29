@@ -92,6 +92,53 @@ public static class ProductCatalogEndpoints
         .ProducesProblem(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status404NotFound);
 
+        products.MapGet("/{productId:guid}/price", async (
+            Guid productId,
+            DateTimeOffset? at,
+            IProductPricingService service,
+            CancellationToken cancellationToken) =>
+        {
+            var result = await service.GetCurrentPriceAsync(productId, at, cancellationToken);
+            return result.IsSuccess ? Results.Ok(result.Value) : Failure(result.Error, result.Message);
+        })
+        .WithName("GetProductPriceV1")
+        .Produces<ProductPriceResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status404NotFound);
+
+        products.MapGet("/{productId:guid}/prices", async (
+            Guid productId,
+            DateTimeOffset? at,
+            IProductPricingService service,
+            CancellationToken cancellationToken) =>
+        {
+            var result = await service.ListPricesAsync(productId, at, cancellationToken);
+            return result.IsSuccess ? Results.Ok(result.Value) : Failure(result.Error, result.Message);
+        })
+        .WithName("ListProductPricesV1")
+        .Produces<IReadOnlyList<ProductPriceResponse>>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status404NotFound);
+
+        products.MapPost("/{productId:guid}/prices", async (
+            Guid productId,
+            ProductPriceUpsertRequest request,
+            IProductPricingService service,
+            CancellationToken cancellationToken) =>
+        {
+            var result = await service.CreatePriceAsync(productId, request, cancellationToken);
+            return result.IsSuccess ? Results.Created($"/api/v1/products/{productId}/prices/{result.Value!.Id}", result.Value) : Failure(result.Error, result.Message);
+        })
+        .WithName("CreateProductPriceV1")
+        .Produces<ProductPriceResponse>(StatusCodes.Status201Created)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status409Conflict);
+
         var categories = catalog.MapGroup("/categories").WithTags("Categories");
         categories.MapGet("", async (bool? active, IProductCatalogService service, CancellationToken cancellationToken) =>
         {

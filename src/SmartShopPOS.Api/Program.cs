@@ -57,6 +57,7 @@ builder.Services.AddScoped<IBranchTerminalService, BranchTerminalService>();
 builder.Services.AddScoped<IUserBranchAssignmentService, UserBranchAssignmentService>();
 builder.Services.AddScoped<IBranchAccessService, BranchAccessService>();
 builder.Services.AddScoped<IProductCatalogService, ProductCatalogService>();
+builder.Services.AddScoped<IProductPricingService, ProductPricingService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

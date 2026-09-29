@@ -19,3 +19,13 @@
 **Current implementation:** The catalog remains organization-scoped and deliberately excludes branch, terminal, pricing, quantity, and stock fields. The schema enforces unique identities by organization and preserves logical deactivation via `IsActive`. The API is versioned under `/api/v1` and keeps tax rate logic abstracted away from eTIMS provider logic.
 
 **Deferred:** Inventory movements, stock balances, pricing matrices, sales and purchase flows, accounting, M-Pesa, and eTIMS integrations.
+
+## Milestone 7 - Product Pricing Foundation
+
+**Current task:** Product pricing history and effective pricing resolution
+
+**Status:** Product pricing is implemented as an organization-scoped, time-aware history model with effective-date validation, a versioned pricing API, and PostgreSQL-backed persistence tests.
+
+**Current implementation:** Product prices are stored separately from the source product master records and include cost/selling values, effective-from timestamps, and optional effective-to timestamps. The service layer resolves the current or point-in-time price, enforces tenant ownership, and prevents overlapping active periods for the same product. Permissions are distinct from catalog management and are validated before create and view operations.
+
+**Deferred:** Branch-specific pricing, discounts, promotions, tax integration, sales ledger posting, and inventory valuation.

@@ -21,6 +21,7 @@ public class SmartShopPosDbContext : DbContext
     public DbSet<Terminal> Terminals => Set<Terminal>();
     public DbSet<UserBranch> UserBranches => Set<UserBranch>();
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<ProductPrice> ProductPrices => Set<ProductPrice>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Brand> Brands => Set<Brand>();
     public DbSet<UnitOfMeasure> UnitsOfMeasure => Set<UnitOfMeasure>();

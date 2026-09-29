@@ -45,7 +45,9 @@ public sealed class PermissionConfiguration : IEntityTypeConfiguration<Permissio
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af23"), "tax_categories.view", "View tax categories"),
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af24"), "tax_categories.create", "Create tax categories"),
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af25"), "tax_categories.update", "Update tax categories"),
-        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af26"), "tax_categories.deactivate", "Deactivate tax categories")
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af26"), "tax_categories.deactivate", "Deactivate tax categories"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af27"), "products.prices.view", "View product prices"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af28"), "products.prices.create", "Create product prices")
     ];
 
     public void Configure(EntityTypeBuilder<Permission> builder)

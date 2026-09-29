@@ -5,3 +5,4 @@ Use this area for validated product requirements, user workflows, acceptance cri
 ## Current implemented scope
 
 - [Product Catalog Foundation](product-catalog-foundation.md)
+- [Product Pricing Foundation](product-pricing-foundation.md)

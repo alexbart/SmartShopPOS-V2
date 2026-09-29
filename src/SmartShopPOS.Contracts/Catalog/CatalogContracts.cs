@@ -73,3 +73,15 @@ public sealed record TaxCategoryResponse(
     bool IsActive,
     DateTimeOffset CreatedAt,
     DateTimeOffset UpdatedAt);
+
+public sealed record ProductPriceUpsertRequest(decimal CostPrice, decimal SellingPrice, DateTimeOffset EffectiveFrom);
+
+public sealed record ProductPriceResponse(
+    Guid Id,
+    Guid ProductId,
+    decimal CostPrice,
+    decimal SellingPrice,
+    DateTimeOffset EffectiveFrom,
+    DateTimeOffset? EffectiveTo,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt);
