@@ -1,13 +1,13 @@
 # Current Sprint
 
-## Milestone 3 - Authentication and Session Foundation
+## Milestone 4 - Branch and Terminal Foundation
 
-**Current task:** Authentication and session foundation
+**Current task:** Branch and terminal foundation
 
-**Status:** Implementation complete for the initial auth foundation; PostgreSQL-backed verification remains dependent on valid local credentials.
+**Status:** Initial branch and terminal domain, tenant-safe PostgreSQL model, permission-scoped APIs, and PostgreSQL-backed tests are implemented.
 
-**Current implementation:** Cookie-based authentication, PBKDF2 password hashing, server-side session tracking with revocation and expiration, current-user abstraction, login/logout/me endpoints, and auth-session persistence model. The project continues to preserve organization-scoped identity and permission-based authorization without adding a second RBAC system.
+**Current implementation:** Branches are organization-scoped; terminals are branch-scoped and retain the organization identifier needed for a composite tenant foreign key. Endpoints list/create branches and list/create terminals under a branch, with organization derived from the authenticated user and authorization based on global permission keys.
 
-**Deferred:** Full API-level verification against a live PostgreSQL database when a valid local `ConnectionStrings__DefaultConnection` is active; richer branch/terminal access, audit wiring, and later authorization policies remain future work.
+**Deferred:** Branch/terminal update and deactivation endpoints, branch-scoped user access, audit wiring, hardware integration, and operational workstation behavior.
 
-**Next planned milestone:** Expand authentication into broader application authorization and audit usage.
+**Next planned milestone:** Build the product catalog on the organization/branch/terminal foundation.

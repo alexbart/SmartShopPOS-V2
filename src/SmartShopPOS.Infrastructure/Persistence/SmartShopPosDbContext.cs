@@ -17,6 +17,8 @@ public class SmartShopPosDbContext : DbContext
     public DbSet<UserRole> UserRoles => Set<UserRole>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<AuthenticationSession> AuthenticationSessions => Set<AuthenticationSession>();
+    public DbSet<Branch> Branches => Set<Branch>();
+    public DbSet<Terminal> Terminals => Set<Terminal>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

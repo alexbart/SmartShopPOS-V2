@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using SmartShopPOS.Domain.Identity;
@@ -25,8 +26,33 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Swagger_RequiresBothAuthenticationCookiesOnlyForProtectedEndpoints()
+    {
+        using var client = _factory.CreateClient();
+        using var response = await client.GetAsync("/swagger/v1/swagger.json");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var branchSecurity = document.RootElement
+            .GetProperty("paths")
+            .GetProperty("/api/branches")
+            .GetProperty("get")
+            .GetProperty("security");
+        var requirement = branchSecurity[0];
+
+        Assert.True(requirement.TryGetProperty("authenticationCookie", out _));
+        Assert.True(requirement.TryGetProperty("sessionCookie", out _));
+        Assert.False(document.RootElement
+            .GetProperty("paths")
+            .GetProperty("/api/auth/login")
+            .GetProperty("post")
+            .TryGetProperty("security", out _));
+    }
 }
 
+[Collection("PostgreSQL integration")]
 public class IdentityPersistenceTests
 {
     [PostgresFact]
@@ -97,7 +123,10 @@ public sealed class PostgresFactAttribute : FactAttribute
     {
         if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")))
         {
-            Skip = "Set ConnectionStrings__DefaultConnection to run PostgreSQL identity integration tests.";
+            Skip = "Set ConnectionStrings__DefaultConnection to run PostgreSQL integration tests.";
         }
     }
 }
+
+[CollectionDefinition("PostgreSQL integration", DisableParallelization = true)]
+public sealed class PostgreSqlIntegrationCollection;

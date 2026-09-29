@@ -5,16 +5,38 @@ using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.OpenApi;
+using SmartShopPOS.Application.Branches;
+using SmartShopPOS.Api.Branches;
 using SmartShopPOS.Api.Health;
 using SmartShopPOS.Application.Identity;
+using SmartShopPOS.Contracts.Branches;
 using SmartShopPOS.Contracts.Authentication;
+using SmartShopPOS.Infrastructure.Branches;
 using SmartShopPOS.Infrastructure.Identity;
 using SmartShopPOS.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.OperationFilter<CookieAuthenticationOperationFilter>();
+    options.AddSecurityDefinition(CookieAuthenticationOperationFilter.AuthenticationCookieScheme, new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Cookie,
+        Name = "ssps_auth",
+        Description = "ASP.NET Core authentication cookie."
+    });
+    options.AddSecurityDefinition(CookieAuthenticationOperationFilter.SessionCookieScheme, new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Cookie,
+        Name = "ssps_session",
+        Description = "Server-side session token cookie. Both authentication cookies are required."
+    });
+});
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddDbContext<SmartShopPosDbContext>(options =>
@@ -25,6 +47,7 @@ builder.Services.AddScoped<IIdentityWriter, EfCoreIdentityWriter>();
 builder.Services.AddScoped<IPasswordHasher, Pbkdf2PasswordHasher>();
 builder.Services.AddScoped<SmartShopPOS.Application.Identity.IAuthenticationService, SmartShopPOS.Infrastructure.Identity.AuthenticationService>();
 builder.Services.AddScoped<ICurrentUser, CurrentUserAccessor>();
+builder.Services.AddScoped<IBranchTerminalService, BranchTerminalService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -36,6 +59,16 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/api/auth/login";
         options.Events = new CookieAuthenticationEvents
         {
+            OnRedirectToLogin = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            },
+            OnRedirectToAccessDenied = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return Task.CompletedTask;
+            },
             OnValidatePrincipal = async context =>
             {
                 var principal = context.Principal ?? new ClaimsPrincipal();
@@ -145,7 +178,79 @@ app.MapPost("/api/auth/logout", async (SmartShopPOS.Application.Identity.IAuthen
     return Results.Ok();
 });
 
+var branches = app.MapGroup("/api/branches")
+    .RequireAuthorization()
+    .WithTags("Branches and terminals");
+
+branches.MapGet("", async (IBranchTerminalService service, CancellationToken cancellationToken) =>
+{
+    var result = await service.GetBranchesAsync(cancellationToken);
+    return result.IsSuccess ? Results.Ok(result.Value) : ToFailureResult(result.Error, result.Message);
+})
+.WithName("ListBranches")
+.Produces<IReadOnlyList<BranchResponse>>(StatusCodes.Status200OK)
+.ProducesProblem(StatusCodes.Status401Unauthorized)
+.ProducesProblem(StatusCodes.Status403Forbidden);
+
+branches.MapPost("", async (CreateBranchRequest request, IBranchTerminalService service, CancellationToken cancellationToken) =>
+{
+    var result = await service.CreateBranchAsync(request, cancellationToken);
+    return result.IsSuccess
+        ? Results.Created($"/api/branches/{result.Value!.Id}", result.Value)
+        : ToFailureResult(result.Error, result.Message);
+})
+.WithName("CreateBranch")
+.Produces<BranchResponse>(StatusCodes.Status201Created)
+.ProducesProblem(StatusCodes.Status400BadRequest)
+.ProducesProblem(StatusCodes.Status401Unauthorized)
+.ProducesProblem(StatusCodes.Status403Forbidden)
+.ProducesProblem(StatusCodes.Status409Conflict);
+
+branches.MapGet("/{branchId:guid}/terminals", async (Guid branchId, IBranchTerminalService service, CancellationToken cancellationToken) =>
+{
+    var result = await service.GetTerminalsAsync(branchId, cancellationToken);
+    return result.IsSuccess ? Results.Ok(result.Value) : ToFailureResult(result.Error, result.Message);
+})
+.WithName("ListBranchTerminals")
+.Produces<IReadOnlyList<TerminalResponse>>(StatusCodes.Status200OK)
+.ProducesProblem(StatusCodes.Status401Unauthorized)
+.ProducesProblem(StatusCodes.Status403Forbidden)
+.ProducesProblem(StatusCodes.Status404NotFound);
+
+branches.MapPost("/{branchId:guid}/terminals", async (
+    Guid branchId,
+    CreateTerminalRequest request,
+    IBranchTerminalService service,
+    CancellationToken cancellationToken) =>
+{
+    var result = await service.CreateTerminalAsync(branchId, request, cancellationToken);
+    return result.IsSuccess
+        ? Results.Created($"/api/branches/{branchId}/terminals/{result.Value!.Id}", result.Value)
+        : ToFailureResult(result.Error, result.Message);
+})
+.WithName("CreateBranchTerminal")
+.Produces<TerminalResponse>(StatusCodes.Status201Created)
+.ProducesProblem(StatusCodes.Status400BadRequest)
+.ProducesProblem(StatusCodes.Status401Unauthorized)
+.ProducesProblem(StatusCodes.Status403Forbidden)
+.ProducesProblem(StatusCodes.Status404NotFound)
+.ProducesProblem(StatusCodes.Status409Conflict);
+
 app.Run();
+
+static IResult ToFailureResult(BranchTerminalError error, string? message)
+{
+    var (statusCode, title) = error switch
+    {
+        BranchTerminalError.Unauthenticated => (StatusCodes.Status401Unauthorized, "Authentication required"),
+        BranchTerminalError.Forbidden => (StatusCodes.Status403Forbidden, "Permission denied"),
+        BranchTerminalError.NotFound => (StatusCodes.Status404NotFound, "Resource not found"),
+        BranchTerminalError.Conflict => (StatusCodes.Status409Conflict, "Resource conflict"),
+        _ => (StatusCodes.Status400BadRequest, "Invalid request")
+    };
+
+    return Results.Problem(statusCode: statusCode, title: title, detail: message);
+}
 
 public partial class Program
 {

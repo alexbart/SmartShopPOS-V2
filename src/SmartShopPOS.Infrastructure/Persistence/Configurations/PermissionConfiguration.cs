@@ -13,7 +13,15 @@ public sealed class PermissionConfiguration : IEntityTypeConfiguration<Permissio
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af03"), "roles.view", "View roles"),
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af04"), "roles.manage", "Manage roles"),
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af05"), "sales.create", "Create sales"),
-        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af06"), "reports.view", "View reports")
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af06"), "reports.view", "View reports"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af07"), "branches.view", "View branches"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af08"), "branches.create", "Create branches"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af09"), "branches.update", "Update branches"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af0a"), "branches.deactivate", "Deactivate branches"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af0b"), "terminals.view", "View terminals"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af0c"), "terminals.create", "Create terminals"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af0d"), "terminals.update", "Update terminals"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af0e"), "terminals.deactivate", "Deactivate terminals")
     ];
 
     public void Configure(EntityTypeBuilder<Permission> builder)

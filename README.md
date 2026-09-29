@@ -17,9 +17,8 @@ The platform is designed to grow toward multiple users, terminals, branches, inv
 
 ## Status
 
-- **Implemented:** Project documentation and .NET solution foundations, organization/user/RBAC domain and PostgreSQL persistence model, initial permission catalog, cookie-based authentication/session foundation, secure password hashing, and `CreateOrganizationIdentity` migration.
-- **In development:** PostgreSQL migration application and database-backed auth/session verification require valid local credentials.
-- **Planned:** Branches, terminals, catalog, sales, inventory, accounting, payments, integrations, reporting, and hardware agent.
+- **Implemented:** Project documentation and .NET solution foundations, organization/user/RBAC domain, cookie-based authentication/session foundation, branch/terminal domain and organization-scoped APIs, permission catalog, and PostgreSQL migrations.
+- **Next:** Catalog, sales, inventory, accounting, payments, integrations, reporting, and hardware agent.
 
 ## Planned Modules
 

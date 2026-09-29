@@ -17,6 +17,8 @@ PostgreSQL
 
 The browser is the POS and management experience. The API owns application access and coordinates domain and infrastructure concerns. PostgreSQL is the primary production database, with constraints and transactions contributing to correctness.
 
+Organizations own branches, and branches own registered terminals. Branch management derives organization scope from the authenticated user. A terminal also stores `OrganizationId` so a composite foreign key can enforce that its branch belongs to the same organization.
+
 ## Eventual Hardware Architecture
 
 ```text

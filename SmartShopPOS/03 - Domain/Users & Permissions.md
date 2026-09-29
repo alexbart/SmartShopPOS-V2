@@ -10,4 +10,6 @@ The persistence model enforces organization ownership with restricted organizati
 
 Implemented tables: `organizations`, `users`, `roles`, `permissions`, `user_roles`, `role_permissions`, and `authentication_sessions`. Migration: `CreateOrganizationIdentity` plus the auth/session extension migration. The permission catalog is seeded deterministically; roles are not seeded because they require a real organization. Database application and persistence verification require the local `ConnectionStrings__DefaultConnection` environment variable.
 
-Branches, terminals, branch-scoped user access, and richer session management remain future features. These will attach to the organization/user identity model to support audit attribution and cashier operations without making them part of this initial authentication foundation.
+Branches belong to organizations and terminals belong to branches. Branch codes are unique within an organization; terminal codes are unique within a branch. The terminal stores `OrganizationId` in addition to `BranchId` so PostgreSQL can enforce branch/tenant consistency with a composite foreign key. Branches and terminals are deactivated rather than physically deleted.
+
+The global permission catalog includes `branches.view`, `branches.create`, `branches.update`, `branches.deactivate`, `terminals.view`, `terminals.create`, `terminals.update`, and `terminals.deactivate`. Current APIs provide organization-scoped listing and creation; update/deactivation endpoints remain deferred.

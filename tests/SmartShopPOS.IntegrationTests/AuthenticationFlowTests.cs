@@ -11,6 +11,7 @@ using SmartShopPOS.Infrastructure.Persistence;
 
 namespace SmartShopPOS.IntegrationTests;
 
+[Collection("PostgreSQL integration")]
 public sealed class AuthenticationFlowTests
 {
     [PostgresFact]
