@@ -7,11 +7,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi;
 using SmartShopPOS.Api.Catalog;
+using SmartShopPOS.Api.Inventory;
 using SmartShopPOS.Application.Branches;
 using SmartShopPOS.Application.Catalog;
 using SmartShopPOS.Api.Branches;
 using SmartShopPOS.Api.Health;
 using SmartShopPOS.Application.Identity;
+using SmartShopPOS.Application.Inventory;
 using SmartShopPOS.Application.UserBranches;
 using SmartShopPOS.Contracts.Branches;
 using SmartShopPOS.Contracts.Authentication;
@@ -19,6 +21,7 @@ using SmartShopPOS.Contracts.UserBranches;
 using SmartShopPOS.Infrastructure.Branches;
 using SmartShopPOS.Infrastructure.Catalog;
 using SmartShopPOS.Infrastructure.Identity;
+using SmartShopPOS.Infrastructure.Inventory;
 using SmartShopPOS.Infrastructure.Persistence;
 using SmartShopPOS.Infrastructure.UserBranches;
 
@@ -58,6 +61,7 @@ builder.Services.AddScoped<IUserBranchAssignmentService, UserBranchAssignmentSer
 builder.Services.AddScoped<IBranchAccessService, BranchAccessService>();
 builder.Services.AddScoped<IProductCatalogService, ProductCatalogService>();
 builder.Services.AddScoped<IProductPricingService, ProductPricingService>();
+builder.Services.AddScoped<IInventoryService, InventoryService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -354,6 +358,7 @@ me.MapPost("/branch-context", async (
 .ProducesProblem(StatusCodes.Status409Conflict);
 
 app.MapProductCatalog();
+app.MapInventory();
 
 app.Run();
 

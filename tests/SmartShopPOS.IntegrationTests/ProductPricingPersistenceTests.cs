@@ -112,6 +112,7 @@ public sealed class ProductPricingPersistenceTests
         public Guid? UserId { get; } = userId;
         public Guid? OrganizationId { get; } = organizationId;
         public Guid? SessionId { get; } = Guid.NewGuid();
+        public Guid? SelectedBranchId { get; } = null;
         public string? Email { get; } = "pricing.user@example.test";
     }
 

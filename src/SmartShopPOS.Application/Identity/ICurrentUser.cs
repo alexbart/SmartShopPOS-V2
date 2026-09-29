@@ -6,5 +6,6 @@ public interface ICurrentUser
     Guid? UserId { get; }
     Guid? OrganizationId { get; }
     Guid? SessionId { get; }
+    Guid? SelectedBranchId { get; }
     string? Email { get; }
 }

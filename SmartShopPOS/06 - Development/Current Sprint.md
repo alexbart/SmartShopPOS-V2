@@ -29,3 +29,13 @@
 **Current implementation:** Product prices are stored separately from the source product master records and include cost/selling values, effective-from timestamps, and optional effective-to timestamps. The service layer resolves the current or point-in-time price, enforces tenant ownership, and prevents overlapping active periods for the same product. Permissions are distinct from catalog management and are validated before create and view operations.
 
 **Deferred:** Branch-specific pricing, discounts, promotions, tax integration, sales ledger posting, and inventory valuation.
+
+## Milestone 8 - Branch Inventory and Append-Only Stock Ledger
+
+**Current task:** Inventory and stock ledger foundation (Prompt 009)
+
+**Status:** Inventory balances, movement history, selected-branch APIs, database migration, and unit/PostgreSQL integration coverage are implemented.
+
+**Current implementation:** Products remain organization-scoped. Balances and movements are branch-scoped with tenant-safe composite foreign keys, uniqueness and quantity constraints, append-only movement APIs, movement direction mapping, opening balance and reasoned adjustment operations, and transactional updates. The branch context and inventory-specific permissions are required for all operations.
+
+**Deferred:** Purchasing, sales posting, stock transfers, stocktakes, inventory valuation, costing, unit conversion, and movement reversal workflows.

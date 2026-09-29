@@ -47,7 +47,11 @@ public sealed class PermissionConfiguration : IEntityTypeConfiguration<Permissio
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af25"), "tax_categories.update", "Update tax categories"),
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af26"), "tax_categories.deactivate", "Deactivate tax categories"),
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af27"), "products.prices.view", "View product prices"),
-        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af28"), "products.prices.create", "Create product prices")
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af28"), "products.prices.create", "Create product prices"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af29"), "inventory.view", "View inventory balances"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af2a"), "inventory.opening_balance", "Create inventory opening balances"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af2b"), "inventory.adjust", "Adjust inventory"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af2c"), "inventory.movements.view", "View stock movements")
     ];
 
     public void Configure(EntityTypeBuilder<Permission> builder)

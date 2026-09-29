@@ -1,10 +1,12 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using SmartShopPOS.Application.Identity;
+using SmartShopPOS.Infrastructure.Persistence;
 
 namespace SmartShopPOS.Infrastructure.Identity;
 
-public sealed class CurrentUserAccessor(IHttpContextAccessor httpContextAccessor) : ICurrentUser
+public sealed class CurrentUserAccessor(IHttpContextAccessor httpContextAccessor, SmartShopPosDbContext dbContext) : ICurrentUser
 {
     public bool IsAuthenticated => httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == true;
 
@@ -36,6 +38,24 @@ public sealed class CurrentUserAccessor(IHttpContextAccessor httpContextAccessor
         {
             var value = httpContextAccessor.HttpContext?.User?.FindFirst("session_id")?.Value;
             return Guid.TryParse(value, out var sessionId) ? sessionId : null;
+        }
+    }
+
+    public Guid? SelectedBranchId
+    {
+        get
+        {
+            if (SessionId is not Guid sessionId)
+            {
+                return null;
+            }
+
+            // Query the session from DB to get the selected branch
+            var session = dbContext.AuthenticationSessions
+                .AsNoTracking()
+                .SingleOrDefault(s => s.SessionId == sessionId && s.RevokedAt == null && s.ExpiresAt > DateTimeOffset.UtcNow);
+
+            return session?.SelectedBranchId;
         }
     }
 

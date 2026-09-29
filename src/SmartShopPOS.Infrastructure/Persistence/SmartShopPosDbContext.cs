@@ -26,6 +26,8 @@ public class SmartShopPosDbContext : DbContext
     public DbSet<Brand> Brands => Set<Brand>();
     public DbSet<UnitOfMeasure> UnitsOfMeasure => Set<UnitOfMeasure>();
     public DbSet<TaxCategory> TaxCategories => Set<TaxCategory>();
+    public DbSet<InventoryBalance> InventoryBalances => Set<InventoryBalance>();
+    public DbSet<StockMovement> StockMovements => Set<StockMovement>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

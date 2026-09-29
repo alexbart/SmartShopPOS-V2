@@ -19,6 +19,8 @@ The browser is the POS and management experience. The API owns application acces
 
 Organizations own branches, and branches own registered terminals. Branch management derives organization scope from the authenticated user. A terminal also stores `OrganizationId` so a composite foreign key can enforce that its branch belongs to the same organization.
 
+Products remain organization-level master data. Inventory is branch-level operational data keyed by organization, branch, and product. `InventoryBalance` is the current quantity projection; append-only `StockMovement` records explain each change. Composite foreign keys enforce tenant consistency, while transactional stock operations keep movement and balance updates atomic. See [[Inventory & Stock Ledger]].
+
 ## Operational Authorization Scopes
 
 These scopes are separate and must not substitute for each other:
