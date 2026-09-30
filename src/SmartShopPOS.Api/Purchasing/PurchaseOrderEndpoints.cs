@@ -87,6 +87,69 @@ public static class PurchaseOrderEndpoints
         return endpoints;
     }
 
+    public static IEndpointRouteBuilder MapPurchaseOrderLines(this IEndpointRouteBuilder endpoints)
+    {
+        var group = endpoints.MapGroup("/api/v1/purchase-orders/{purchaseOrderId:guid}/lines")
+            .RequireAuthorization()
+            .WithTags("Purchase order lines");
+
+        group.MapGet("", async (Guid purchaseOrderId, IPurchaseOrderLineService service, CancellationToken cancellationToken) =>
+        {
+            var result = await service.ListAsync(purchaseOrderId, cancellationToken);
+            return result.IsSuccess ? Results.Ok(result.Value) : Failure(result.Error, result.Message);
+        })
+        .WithName("ListPurchaseOrderLines")
+        .Produces<IReadOnlyList<PurchaseOrderLineResponse>>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPost("", async (Guid purchaseOrderId, PurchaseOrderLineUpsertRequest request,
+            IPurchaseOrderLineService service, CancellationToken cancellationToken) =>
+        {
+            var result = await service.CreateAsync(purchaseOrderId, request, cancellationToken);
+            return result.IsSuccess
+                ? Results.Created($"/api/v1/purchase-orders/{purchaseOrderId}/lines/{result.Value!.Id}", result.Value)
+                : Failure(result.Error, result.Message);
+        })
+        .WithName("CreatePurchaseOrderLine")
+        .Produces<PurchaseOrderLineResponse>(StatusCodes.Status201Created)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status409Conflict);
+
+        group.MapPut("/{lineId:guid}", async (Guid purchaseOrderId, Guid lineId,
+            PurchaseOrderLineUpsertRequest request, IPurchaseOrderLineService service, CancellationToken cancellationToken) =>
+        {
+            var result = await service.UpdateAsync(purchaseOrderId, lineId, request, cancellationToken);
+            return result.IsSuccess ? Results.Ok(result.Value) : Failure(result.Error, result.Message);
+        })
+        .WithName("UpdatePurchaseOrderLine")
+        .Produces<PurchaseOrderLineResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status400BadRequest)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status409Conflict);
+
+        group.MapDelete("/{lineId:guid}", async (Guid purchaseOrderId, Guid lineId,
+            IPurchaseOrderLineService service, CancellationToken cancellationToken) =>
+        {
+            var result = await service.DeleteAsync(purchaseOrderId, lineId, cancellationToken);
+            return result.IsSuccess ? Results.NoContent() : Failure(result.Error, result.Message);
+        })
+        .WithName("DeletePurchaseOrderLine")
+        .Produces(StatusCodes.Status204NoContent)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status409Conflict);
+
+        return endpoints;
+    }
+
     private static IResult Failure(PurchaseOrderError error, string? message)
     {
         var (status, title) = error switch
@@ -96,6 +159,21 @@ public static class PurchaseOrderEndpoints
             PurchaseOrderError.NotFound => (StatusCodes.Status404NotFound, "Resource not found"),
             PurchaseOrderError.Conflict or PurchaseOrderError.InactiveBranch or PurchaseOrderError.InactiveSupplier =>
                 (StatusCodes.Status409Conflict, "Purchase order conflict"),
+            _ => (StatusCodes.Status400BadRequest, "Invalid request")
+        };
+
+        return Results.Problem(statusCode: status, title: title, detail: message);
+    }
+
+    private static IResult Failure(PurchaseOrderLineError error, string? message)
+    {
+        var (status, title) = error switch
+        {
+            PurchaseOrderLineError.Unauthenticated => (StatusCodes.Status401Unauthorized, "Authentication required"),
+            PurchaseOrderLineError.Forbidden => (StatusCodes.Status403Forbidden, "Permission denied"),
+            PurchaseOrderLineError.NotFound => (StatusCodes.Status404NotFound, "Resource not found"),
+            PurchaseOrderLineError.Conflict or PurchaseOrderLineError.InactiveProduct =>
+                (StatusCodes.Status409Conflict, "Purchase order line conflict"),
             _ => (StatusCodes.Status400BadRequest, "Invalid request")
         };
 

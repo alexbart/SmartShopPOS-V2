@@ -64,7 +64,11 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
             (Path: "/api/v1/purchase-orders/{purchaseOrderId}", Method: "get"),
             (Path: "/api/v1/purchase-orders/{purchaseOrderId}", Method: "put"),
             (Path: "/api/v1/purchase-orders/{purchaseOrderId}/submit", Method: "post"),
-            (Path: "/api/v1/purchase-orders/{purchaseOrderId}/cancel", Method: "post")
+            (Path: "/api/v1/purchase-orders/{purchaseOrderId}/cancel", Method: "post"),
+            (Path: "/api/v1/purchase-orders/{purchaseOrderId}/lines", Method: "get"),
+            (Path: "/api/v1/purchase-orders/{purchaseOrderId}/lines", Method: "post"),
+            (Path: "/api/v1/purchase-orders/{purchaseOrderId}/lines/{lineId}", Method: "put"),
+            (Path: "/api/v1/purchase-orders/{purchaseOrderId}/lines/{lineId}", Method: "delete")
         };
         foreach (var protectedOperation in protectedOperations)
         {
@@ -98,6 +102,19 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
             .GetProperty("responses").TryGetProperty("201", out _));
         Assert.False(purchaseOrderPaths.GetProperty("/api/v1/purchase-orders/{purchaseOrderId}").TryGetProperty("delete", out _));
 
+        var linePaths = document.RootElement.GetProperty("paths");
+        Assert.True(linePaths.GetProperty("/api/v1/purchase-orders/{purchaseOrderId}/lines").GetProperty("post")
+            .GetProperty("responses").TryGetProperty("201", out _));
+        Assert.True(linePaths.GetProperty("/api/v1/purchase-orders/{purchaseOrderId}/lines/{lineId}").GetProperty("delete")
+            .GetProperty("responses").TryGetProperty("204", out _));
+        var lineRequest = document.RootElement.GetProperty("components").GetProperty("schemas")
+            .GetProperty("PurchaseOrderLineUpsertRequest").GetProperty("properties");
+        Assert.True(lineRequest.TryGetProperty("productId", out _));
+        Assert.True(lineRequest.TryGetProperty("quantity", out _));
+        Assert.True(lineRequest.TryGetProperty("unitCost", out _));
+        Assert.False(lineRequest.TryGetProperty("organizationId", out _));
+        Assert.False(lineRequest.TryGetProperty("purchaseOrderId", out _));
+
         Assert.False(document.RootElement
             .GetProperty("paths")
             .GetProperty("/api/auth/login")
@@ -126,6 +143,18 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
             notes = "anonymous request"
         });
         Assert.Equal(HttpStatusCode.Unauthorized, anonymousPurchaseOrderCreate.StatusCode);
+        using var anonymousPurchaseOrderLineList = await client.GetAsync($"/api/v1/purchase-orders/{Guid.NewGuid()}/lines");
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousPurchaseOrderLineList.StatusCode);
+        var lineBody = new { productId = Guid.NewGuid(), quantity = 1m, unitCost = 2m, notes = (string?)null };
+        using var anonymousPurchaseOrderLineCreate = await client.PostAsJsonAsync(
+            $"/api/v1/purchase-orders/{Guid.NewGuid()}/lines", lineBody);
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousPurchaseOrderLineCreate.StatusCode);
+        using var anonymousPurchaseOrderLineUpdate = await client.PutAsJsonAsync(
+            $"/api/v1/purchase-orders/{Guid.NewGuid()}/lines/{Guid.NewGuid()}", lineBody);
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousPurchaseOrderLineUpdate.StatusCode);
+        using var anonymousPurchaseOrderLineDelete = await client.DeleteAsync(
+            $"/api/v1/purchase-orders/{Guid.NewGuid()}/lines/{Guid.NewGuid()}");
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousPurchaseOrderLineDelete.StatusCode);
     }
 }
 

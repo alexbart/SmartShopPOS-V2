@@ -59,3 +59,13 @@
 **Current implementation:** Create, draft update, submit, and cancel require access to the order's destination branch in the selected server-side context. A transactional PostgreSQL per-organization counter and unique constraint generate order numbers. Orders are tenant-scoped and retained after cancellation.
 
 **Deferred:** Purchase order lines, totals, goods receipts, inventory receipt movements, supplier balances, accounts payable, purchasing valuation, payments, and accounting.
+
+## Milestone 11 - Purchase Order Lines
+
+**Current task:** Draft purchase order product lines (Prompt 012)
+
+**Status:** Organization-safe PO lines, draft-only create/update/delete operations, product-specific uniqueness and quantity/cost constraints, versioned API, permissions, migration, Swagger coverage, and unit/PostgreSQL tests are implemented.
+
+**Current implementation:** Lines reference Product master data without snapshots, use decimal quantities and document-specific unit costs, and calculate line totals for responses only. Parent PO rows are locked for line mutations so line writes serialize with order status transitions. Line changes have no inventory effects.
+
+**Deferred:** Goods receipts and stock movements, inventory changes, receiving rules, purchase taxes/discounts, valuation, supplier balances, accounts payable, payments, and accounting.

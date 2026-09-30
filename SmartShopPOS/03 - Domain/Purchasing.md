@@ -6,8 +6,10 @@ Purchase orders are organization-owned purchasing documents that reference an or
 
 Each organization receives a sequentially generated `PO-000001` style number. A PostgreSQL counter row and unique organization/number constraint protect generation under concurrent requests. Orders have three states: Draft, Submitted, and Cancelled. Draft orders can be edited and submitted; Draft and Submitted orders can be cancelled. There is no delete endpoint.
 
-This foundation stores the header only. It intentionally has no lines, totals, goods receipts, supplier balances, or inventory effects. Future purchase order lines must be complete and valid before submission. Goods receipt workflows will later reference submitted orders and create `Receipt` stock movements through the inventory service; purchase orders themselves never change stock.
+Purchase order lines belong to a purchase order and reference organization-level Product master data. Each product may appear once per PO. Lines store decimal quantity in the Product's configured unit of measure and a document-specific `UnitCost`, separate from catalog `ProductPrice`; line total is calculated for display and is not persisted as authoritative data. Draft lines may be added, edited, or removed. Submitted and cancelled orders and their lines are immutable. Submitting an order does not require lines in this foundation; a future purchasing workflow may impose that rule.
+
+Line operations require a line-specific permission and the same server-selected destination branch access as their parent order. The database enforces same-organization references to both PurchaseOrder and Product, positive quantity, non-negative cost, and one line per product per order. Line changes do not alter inventory balances or create stock movements. A future goods receipt workflow will be responsible for creating `Receipt` movements through the inventory service.
 
 ## Deferred
 
-Purchase order lines and quantities, goods receipts, purchasing valuation, accounts payable, payment workflows, accounting, and inventory movements are later slices.
+Goods receipts, purchasing valuation, accounts payable, payment workflows, accounting, inventory movements, taxes, and discounts are later slices.
