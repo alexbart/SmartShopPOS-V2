@@ -68,4 +68,14 @@
 
 **Current implementation:** Lines reference Product master data without snapshots, use decimal quantities and document-specific unit costs, and calculate line totals for responses only. Parent PO rows are locked for line mutations so line writes serialize with order status transitions. Line changes have no inventory effects.
 
-**Deferred:** Goods receipts and stock movements, inventory changes, receiving rules, purchase taxes/discounts, valuation, supplier balances, accounts payable, payments, and accounting.
+**Deferred:** Goods receipt reversals, purchase taxes/discounts, valuation, supplier balances, accounts payable, payments, and accounting.
+
+## Milestone 12 - Goods Receipt Foundation
+
+**Current task:** Posted receipts and inventory integration (Prompt 013)
+
+**Status:** Goods receipt records, tenant-aware persistence, versioned APIs, permission seeding, and stock ledger integration are implemented.
+
+**Current implementation:** Receipts can post partial quantities against Submitted POs. Receipt creation locks the PO in a serializable transaction, validates cumulative received amounts, creates receipt lines and positive Receipt movements, and updates InventoryBalance in the same transaction. Organization-scoped persisted idempotency binds a request hash to its receipt. Receipt lines are the received-quantity source; PO status and unit costs remain unchanged.
+
+**Deferred:** Receipt reversal, purchasing valuation, supplier invoices/AP, accounting, payments, tax, and sales workflows.

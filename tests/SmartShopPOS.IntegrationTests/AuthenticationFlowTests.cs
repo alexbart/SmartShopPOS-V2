@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using SmartShopPOS.Contracts.Authentication;
@@ -36,7 +38,10 @@ public sealed class AuthenticationFlowTests
         try
         {
             using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(webHost =>
-                webHost.UseSetting("ConnectionStrings:DefaultConnection", connectionString));
+            {
+                webHost.UseSetting("ConnectionStrings:DefaultConnection", connectionString);
+                webHost.ConfigureServices(services => services.AddDataProtection().UseEphemeralDataProtectionProvider());
+            });
             using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
             {
                 BaseAddress = new Uri("https://localhost"),

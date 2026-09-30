@@ -28,3 +28,6 @@ Opening balance is limited to one baseline per organization/branch/product. Adju
 The PostgreSQL integration suite covers opening-balance uniqueness, atomic rejection of an insufficient decrease, fractional balances, tenant constraints, and branch uniqueness. A separately orchestrated simultaneous-decrease stress test remains future test work; serializable conflict handling is implemented without relying on that nondeterministic test.
 
 Purchasing and sales workflows will later create receipt/sale movements. Transfers, stocktakes, valuation, costing, unit conversion, and reversal workflows are future slices. No inventory valuation is calculated here; `CostPrice` is not used for stock valuation.
+# Goods Receipt Integration
+
+GoodsReceipt is the purchasing-to-inventory boundary. A committed receipt appends one positive `Receipt` StockMovement per receipt line and transactionally updates the corresponding branch InventoryBalance using the central movement direction mapping. The generic ledger reference is `GoodsReceipt` plus its receipt identifier; the receipt line links quantities to the originating PO line. Partial receiving is supported and over-receiving is rejected while the purchase order row is locked. Receipt lines, not a duplicated PO received-quantity field, are the authoritative history. Cost valuation and accounting remain outside inventory.

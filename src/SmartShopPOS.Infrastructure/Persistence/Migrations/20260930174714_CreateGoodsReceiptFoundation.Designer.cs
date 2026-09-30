@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SmartShopPOS.Infrastructure.Persistence;
@@ -11,9 +12,11 @@ using SmartShopPOS.Infrastructure.Persistence;
 namespace SmartShopPOS.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(SmartShopPosDbContext))]
-    partial class SmartShopPosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260930174714_CreateGoodsReceiptFoundation")]
+    partial class CreateGoodsReceiptFoundation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -321,22 +324,6 @@ namespace SmartShopPOS.Infrastructure.Persistence.Migrations
                     b.ToTable("goods_receipt_lines", null, t =>
                         {
                             t.HasCheckConstraint("ck_goods_receipt_lines_quantity_positive", "\"QuantityReceived\" > 0");
-                        });
-                });
-
-            modelBuilder.Entity("SmartShopPOS.Domain.Identity.GoodsReceiptNumberSequence", b =>
-                {
-                    b.Property<Guid>("OrganizationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<long>("LastNumber")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("OrganizationId");
-
-                    b.ToTable("goods_receipt_number_sequences", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_goods_receipt_number_sequences_last_number_positive", "\"LastNumber\" > 0");
                         });
                 });
 
@@ -1635,17 +1622,6 @@ namespace SmartShopPOS.Infrastructure.Persistence.Migrations
                         .HasPrincipalKey("OrganizationId", "PurchaseOrderId", "Id")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("SmartShopPOS.Domain.Identity.GoodsReceiptNumberSequence", b =>
-                {
-                    b.HasOne("SmartShopPOS.Domain.Identity.Organization", "Organization")
-                        .WithMany()
-                        .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Organization");
                 });
 
             modelBuilder.Entity("SmartShopPOS.Domain.Identity.InventoryBalance", b =>

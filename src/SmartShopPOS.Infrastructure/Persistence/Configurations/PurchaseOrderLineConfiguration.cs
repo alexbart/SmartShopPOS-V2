@@ -14,6 +14,8 @@ public sealed class PurchaseOrderLineConfiguration : IEntityTypeConfiguration<Pu
             table.HasCheckConstraint("ck_purchase_order_lines_unit_cost_non_negative", "\"UnitCost\" >= 0");
         });
         builder.HasKey(line => line.Id);
+        builder.HasAlternateKey(line => new { line.OrganizationId, line.PurchaseOrderId, line.Id })
+            .HasName("ak_purchase_order_lines_organization_order_id");
         builder.Property(line => line.Quantity).HasColumnType("numeric(18,4)").IsRequired();
         builder.Property(line => line.UnitCost).HasColumnType("numeric(18,4)").IsRequired();
         builder.Ignore(line => line.LineTotal);

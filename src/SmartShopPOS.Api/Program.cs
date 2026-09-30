@@ -71,6 +71,7 @@ builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 builder.Services.AddScoped<IPurchaseOrderLineService, PurchaseOrderLineService>();
+builder.Services.AddScoped<IGoodsReceiptService, GoodsReceiptService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -371,6 +372,7 @@ app.MapInventory();
 app.MapSuppliers();
 app.MapPurchaseOrders();
 app.MapPurchaseOrderLines();
+app.MapGoodsReceipts();
 
 app.Run();
 

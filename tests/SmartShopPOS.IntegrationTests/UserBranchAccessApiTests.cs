@@ -3,9 +3,10 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using SmartShopPOS.Contracts.Authentication;
 using SmartShopPOS.Contracts.UserBranches;
 using SmartShopPOS.Domain.Identity;
@@ -82,7 +83,10 @@ public sealed class UserBranchAccessApiTests
         try
         {
             using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(webHost =>
-                webHost.UseSetting("ConnectionStrings:DefaultConnection", connectionString));
+            {
+                webHost.UseSetting("ConnectionStrings:DefaultConnection", connectionString);
+                webHost.ConfigureServices(services => services.AddDataProtection().UseEphemeralDataProtectionProvider());
+            });
             using var client = factory.CreateClient(new WebApplicationFactoryClientOptions
             {
                 BaseAddress = new Uri("https://localhost"),

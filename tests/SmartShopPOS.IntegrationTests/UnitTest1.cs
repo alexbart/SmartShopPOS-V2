@@ -69,6 +69,9 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
             (Path: "/api/v1/purchase-orders/{purchaseOrderId}/lines", Method: "post"),
             (Path: "/api/v1/purchase-orders/{purchaseOrderId}/lines/{lineId}", Method: "put"),
             (Path: "/api/v1/purchase-orders/{purchaseOrderId}/lines/{lineId}", Method: "delete")
+            ,(Path: "/api/v1/purchase-orders/{purchaseOrderId}/receipts", Method: "get")
+            ,(Path: "/api/v1/purchase-orders/{purchaseOrderId}/receipts", Method: "post")
+            ,(Path: "/api/v1/goods-receipts/{receiptId}", Method: "get")
         };
         foreach (var protectedOperation in protectedOperations)
         {
@@ -121,6 +124,17 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
             .GetProperty("post")
             .TryGetProperty("security", out _));
 
+        var receiptPaths = document.RootElement.GetProperty("paths");
+        Assert.True(receiptPaths.GetProperty("/api/v1/purchase-orders/{purchaseOrderId}/receipts").GetProperty("post")
+            .GetProperty("responses").TryGetProperty("201", out _));
+        Assert.True(receiptPaths.GetProperty("/api/v1/goods-receipts/{receiptId}").GetProperty("get")
+            .GetProperty("responses").TryGetProperty("200", out _));
+        var receiptRequest = document.RootElement.GetProperty("components").GetProperty("schemas")
+            .GetProperty("CreateGoodsReceiptRequest").GetProperty("properties");
+        Assert.True(receiptRequest.TryGetProperty("lines", out _));
+        Assert.False(receiptRequest.TryGetProperty("branchId", out _));
+        Assert.False(receiptRequest.TryGetProperty("organizationId", out _));
+
         using var anonymousList = await client.GetAsync("/api/v1/suppliers");
         Assert.Equal(HttpStatusCode.Unauthorized, anonymousList.StatusCode);
         using var anonymousCreate = await client.PostAsJsonAsync("/api/v1/suppliers", new
@@ -155,6 +169,13 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         using var anonymousPurchaseOrderLineDelete = await client.DeleteAsync(
             $"/api/v1/purchase-orders/{Guid.NewGuid()}/lines/{Guid.NewGuid()}");
         Assert.Equal(HttpStatusCode.Unauthorized, anonymousPurchaseOrderLineDelete.StatusCode);
+        using var anonymousReceiptList = await client.GetAsync($"/api/v1/purchase-orders/{Guid.NewGuid()}/receipts");
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousReceiptList.StatusCode);
+        using var anonymousReceiptCreate = await client.PostAsJsonAsync($"/api/v1/purchase-orders/{Guid.NewGuid()}/receipts",
+            new { receivedAt = DateTimeOffset.UtcNow, lines = new[] { new { purchaseOrderLineId = Guid.NewGuid(), quantityReceived = 1m } } });
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousReceiptCreate.StatusCode);
+        using var anonymousReceiptDetail = await client.GetAsync($"/api/v1/goods-receipts/{Guid.NewGuid()}");
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousReceiptDetail.StatusCode);
     }
 }
 

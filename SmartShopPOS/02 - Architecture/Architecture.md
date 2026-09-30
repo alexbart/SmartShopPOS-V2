@@ -57,3 +57,6 @@ Local Windows Hardware Agent
 The web application and hardware layer are separated so browser and core business logic do not depend on printer protocols, Windows queues, or device-specific behavior. The local agent will provide a controlled boundary for locally attached devices while the web platform remains deployable and manageable as a web application.
 
 See [[Receipt Printer]], [[Cash Drawer]], and [[Barcode Scanner]].
+# Goods receipt boundary
+
+Goods receipts are posted operational events. The PO determines the receiving branch and product lines; branch context/access is checked against that destination. One serializable transaction writes the receipt, receipt lines, stock movements, and current InventoryBalance projection. PostgreSQL composite tenant keys protect receipt-to-order and receipt-line-to-PO-line relationships. Database-backed idempotency protects inventory from duplicate POST retries. Stock movements explain changes; balances remain the current projection. Goods receipt does not perform AP, accounting, valuation, tax, or payment work.
