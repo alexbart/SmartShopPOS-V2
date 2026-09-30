@@ -1,3 +1,3 @@
 # Decisions
 
-Store focused architectural decision records here. See [[ADR-001-Technology-Stack]], [[ADR-002-PostgreSQL]], [[ADR-003-Web-First-Hardware-Architecture]], [[ADR-004-Immutable-Financial-Transactions]], [[ADR-005-Organization-Scoped-Identity]], [[ADR-006-Authentication-and-Session-Architecture]], [[ADR-007-Tenant-Safe-Branches-and-Terminals]], and [[ADR-008-Operational-Branch-Context]].
+Store focused architectural decision records here. See [[ADR-001-Technology-Stack]], [[ADR-002-PostgreSQL]], [[ADR-003-Web-First-Hardware-Architecture]], [[ADR-004-Immutable-Financial-Transactions]], [[ADR-005-Organization-Scoped-Identity]], [[ADR-006-Authentication-and-Session-Architecture]], [[ADR-007-Tenant-Safe-Branches-and-Terminals]], [[ADR-008-Operational-Branch-Context]], [[ADR-009-Inventory-and-Append-Only-Stock-Ledger]], [[ADR-010-Supplier-Foundation]], and [[ADR-011-Purchase-Order-Foundation]].

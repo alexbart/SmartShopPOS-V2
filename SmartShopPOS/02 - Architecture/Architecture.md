@@ -23,6 +23,8 @@ Products remain organization-level master data. Inventory is branch-level operat
 
 Suppliers are organization-scoped master data independent of branch context. Supplier management does not create purchasing documents or inventory movements; later purchasing slices will reference suppliers from purchase orders and goods receipts. See [[Suppliers]].
 
+Purchase orders are organization-owned headers that reference a same-organization supplier and destination branch through composite foreign keys. Order numbers come from a per-organization transactional counter and a unique database constraint. Draft, Submitted, and Cancelled states are controlled by explicit operations; submitted documents are not editable, and cancellation preserves the record. Operations use the selected server-side branch context and branch access service. The header-only foundation has no lines or stock effects; a future goods receipt workflow will integrate with the stock ledger. See [[Purchasing]].
+
 ## Operational Authorization Scopes
 
 These scopes are separate and must not substitute for each other:

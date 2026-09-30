@@ -29,6 +29,8 @@ public class SmartShopPosDbContext : DbContext
     public DbSet<InventoryBalance> InventoryBalances => Set<InventoryBalance>();
     public DbSet<StockMovement> StockMovements => Set<StockMovement>();
     public DbSet<Supplier> Suppliers => Set<Supplier>();
+    public DbSet<PurchaseOrder> PurchaseOrders => Set<PurchaseOrder>();
+    public DbSet<PurchaseOrderNumberSequence> PurchaseOrderNumberSequences => Set<PurchaseOrderNumberSequence>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

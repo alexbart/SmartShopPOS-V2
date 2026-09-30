@@ -17,8 +17,8 @@ The platform is designed to grow toward multiple users, terminals, branches, inv
 
 ## Status
 
-- **Implemented:** Project documentation and .NET solution foundations, organization/user/RBAC domain, cookie-based authentication/session foundation, branch/terminal domain and APIs, explicit user-branch access, server-side operational branch context, organization-scoped product catalog foundation (products, categories, brands, units of measure, tax categories), product pricing foundation (history-aware pricing by product with tenant-safe intervals and versioned API), branch-level inventory balances with an append-only movement ledger, organization-scoped supplier master data, versioned APIs and permissions for these domains, and PostgreSQL migrations.
-- **Next:** Purchase orders and goods receipts, sales, accounting, payments, integrations, reporting, and hardware agent.
+- **Implemented:** Project documentation and .NET solution foundations, organization/user/RBAC domain, cookie-based authentication/session foundation, branch/terminal domain and APIs, explicit user-branch access, server-side operational branch context, organization-scoped product catalog foundation (products, categories, brands, units of measure, tax categories), product pricing foundation (history-aware pricing by product with tenant-safe intervals and versioned API), branch-level inventory balances with an append-only movement ledger, organization-scoped supplier master data, header-only purchase orders with controlled lifecycle, versioned APIs and permissions for these domains, and PostgreSQL migrations.
+- **Next:** Purchase order lines and goods receipts, sales, accounting, payments, integrations, reporting, and hardware agent.
 
 ## Planned Modules
 

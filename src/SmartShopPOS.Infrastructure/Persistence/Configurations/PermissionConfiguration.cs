@@ -55,7 +55,12 @@ public sealed class PermissionConfiguration : IEntityTypeConfiguration<Permissio
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af2d"), "suppliers.view", "View suppliers"),
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af2e"), "suppliers.create", "Create suppliers"),
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af2f"), "suppliers.update", "Update suppliers"),
-        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af30"), "suppliers.deactivate", "Deactivate suppliers")
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af30"), "suppliers.deactivate", "Deactivate suppliers"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af31"), "purchase_orders.view", "View purchase orders"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af32"), "purchase_orders.create", "Create purchase orders"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af33"), "purchase_orders.update", "Update draft purchase orders"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af34"), "purchase_orders.submit", "Submit purchase orders"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af35"), "purchase_orders.cancel", "Cancel purchase orders")
     ];
 
     public void Configure(EntityTypeBuilder<Permission> builder)

@@ -49,3 +49,13 @@
 **Current implementation:** Supplier codes are normalized and unique within an organization. Suppliers are logically deactivated. Supplier operations use authenticated organization context only and do not require a selected branch.
 
 **Deferred:** Purchase orders and lines, goods receipts, supplier balances, accounts payable, payments, and receipt stock movements.
+
+## Milestone 10 - Purchase Order Foundation
+
+**Current task:** Organization-owned purchase order headers (Prompt 011)
+
+**Status:** Draft, submitted, and cancelled header lifecycle, generated organization-scoped order numbers, tenant-safe supplier/branch references, permission-checked API, migration, Swagger operations, and focused domain tests are implemented.
+
+**Current implementation:** Create, draft update, submit, and cancel require access to the order's destination branch in the selected server-side context. A transactional PostgreSQL per-organization counter and unique constraint generate order numbers. Orders are tenant-scoped and retained after cancellation.
+
+**Deferred:** Purchase order lines, totals, goods receipts, inventory receipt movements, supplier balances, accounts payable, purchasing valuation, payments, and accounting.

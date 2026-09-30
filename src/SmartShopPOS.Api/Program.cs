@@ -9,6 +9,7 @@ using Microsoft.OpenApi;
 using SmartShopPOS.Api.Catalog;
 using SmartShopPOS.Api.Inventory;
 using SmartShopPOS.Api.Suppliers;
+using SmartShopPOS.Api.Purchasing;
 using SmartShopPOS.Application.Branches;
 using SmartShopPOS.Application.Catalog;
 using SmartShopPOS.Api.Branches;
@@ -16,6 +17,7 @@ using SmartShopPOS.Api.Health;
 using SmartShopPOS.Application.Identity;
 using SmartShopPOS.Application.Inventory;
 using SmartShopPOS.Application.Suppliers;
+using SmartShopPOS.Application.Purchasing;
 using SmartShopPOS.Application.UserBranches;
 using SmartShopPOS.Contracts.Branches;
 using SmartShopPOS.Contracts.Authentication;
@@ -25,6 +27,7 @@ using SmartShopPOS.Infrastructure.Catalog;
 using SmartShopPOS.Infrastructure.Identity;
 using SmartShopPOS.Infrastructure.Inventory;
 using SmartShopPOS.Infrastructure.Suppliers;
+using SmartShopPOS.Infrastructure.Purchasing;
 using SmartShopPOS.Infrastructure.Persistence;
 using SmartShopPOS.Infrastructure.UserBranches;
 
@@ -66,6 +69,7 @@ builder.Services.AddScoped<IProductCatalogService, ProductCatalogService>();
 builder.Services.AddScoped<IProductPricingService, ProductPricingService>();
 builder.Services.AddScoped<IInventoryService, InventoryService>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
+builder.Services.AddScoped<IPurchaseOrderService, PurchaseOrderService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -364,6 +368,7 @@ me.MapPost("/branch-context", async (
 app.MapProductCatalog();
 app.MapInventory();
 app.MapSuppliers();
+app.MapPurchaseOrders();
 
 app.Run();
 

@@ -58,7 +58,13 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
             (Path: "/api/v1/suppliers", Method: "post"),
             (Path: "/api/v1/suppliers/{supplierId}", Method: "get"),
             (Path: "/api/v1/suppliers/{supplierId}", Method: "put"),
-            (Path: "/api/v1/suppliers/{supplierId}", Method: "delete")
+            (Path: "/api/v1/suppliers/{supplierId}", Method: "delete"),
+            (Path: "/api/v1/purchase-orders", Method: "get"),
+            (Path: "/api/v1/purchase-orders", Method: "post"),
+            (Path: "/api/v1/purchase-orders/{purchaseOrderId}", Method: "get"),
+            (Path: "/api/v1/purchase-orders/{purchaseOrderId}", Method: "put"),
+            (Path: "/api/v1/purchase-orders/{purchaseOrderId}/submit", Method: "post"),
+            (Path: "/api/v1/purchase-orders/{purchaseOrderId}/cancel", Method: "post")
         };
         foreach (var protectedOperation in protectedOperations)
         {
@@ -82,6 +88,16 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.True(supplierRequest.TryGetProperty("name", out _));
         Assert.False(supplierRequest.TryGetProperty("organizationId", out _));
 
+        var purchaseOrderPaths = document.RootElement.GetProperty("paths");
+        var purchaseOrderRequest = document.RootElement.GetProperty("components").GetProperty("schemas")
+            .GetProperty("PurchaseOrderUpsertRequest").GetProperty("properties");
+        Assert.True(purchaseOrderRequest.TryGetProperty("supplierId", out _));
+        Assert.True(purchaseOrderRequest.TryGetProperty("branchId", out _));
+        Assert.False(purchaseOrderRequest.TryGetProperty("organizationId", out _));
+        Assert.True(purchaseOrderPaths.GetProperty("/api/v1/purchase-orders").GetProperty("post")
+            .GetProperty("responses").TryGetProperty("201", out _));
+        Assert.False(purchaseOrderPaths.GetProperty("/api/v1/purchase-orders/{purchaseOrderId}").TryGetProperty("delete", out _));
+
         Assert.False(document.RootElement
             .GetProperty("paths")
             .GetProperty("/api/auth/login")
@@ -96,6 +112,20 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
             name = "Supplier"
         });
         Assert.Equal(HttpStatusCode.Unauthorized, anonymousCreate.StatusCode);
+
+        using var anonymousPurchaseOrderList = await client.GetAsync("/api/v1/purchase-orders");
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousPurchaseOrderList.StatusCode);
+        using var anonymousPurchaseOrderDetail = await client.GetAsync($"/api/v1/purchase-orders/{Guid.NewGuid()}");
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousPurchaseOrderDetail.StatusCode);
+        using var anonymousPurchaseOrderCreate = await client.PostAsJsonAsync("/api/v1/purchase-orders", new
+        {
+            supplierId = Guid.NewGuid(),
+            branchId = Guid.NewGuid(),
+            orderDate = DateTimeOffset.UtcNow,
+            expectedDate = (DateTimeOffset?)null,
+            notes = "anonymous request"
+        });
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousPurchaseOrderCreate.StatusCode);
     }
 }
 
