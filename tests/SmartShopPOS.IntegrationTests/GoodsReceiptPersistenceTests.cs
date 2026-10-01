@@ -29,6 +29,9 @@ public sealed class GoodsReceiptPersistenceTests
         var order = new PurchaseOrder(org.Id, supplier.Id, branch.Id, $"PO-{Guid.NewGuid():N}"[..20], DateTimeOffset.UtcNow, null, null, user.Id);
         order.Submit(user.Id);
         var poLine = new PurchaseOrderLine(org.Id, order.Id, product.Id, 5m, 3m);
+        var otherOrder = new PurchaseOrder(org.Id, supplier.Id, branch.Id, $"PO-{Guid.NewGuid():N}"[..20], DateTimeOffset.UtcNow, null, null, user.Id);
+        otherOrder.Submit(user.Id);
+        var otherPoLine = new PurchaseOrderLine(org.Id, otherOrder.Id, product.Id, 5m, 3m);
         var sessionId = Guid.NewGuid();
         var session = new AuthenticationSession(user.Id, org.Id, sessionId, $"receipt-session-{Guid.NewGuid():N}");
         session.SetSelectedBranch(branch.Id);
@@ -36,7 +39,7 @@ public sealed class GoodsReceiptPersistenceTests
         await using (var setup = new SmartShopPosDbContext(options))
         {
             await setup.Database.MigrateAsync();
-            setup.AddRange(org, user, branch, supplier, category, brand, unit, tax, product, order, poLine, session, assignment);
+            setup.AddRange(org, user, branch, supplier, category, brand, unit, tax, product, order, poLine, otherOrder, otherPoLine, session, assignment);
             await setup.SaveChangesAsync();
         }
 
@@ -75,6 +78,14 @@ public sealed class GoodsReceiptPersistenceTests
                     (await service.CreateAsync(order.Id, new CreateGoodsReceiptRequest(DateTimeOffset.UtcNow, null, [new(poLine.Id, 0.6m)]), "receipt-key-3")).Error);
                 Assert.Equal(GoodsReceiptError.Invalid,
                     (await service.CreateAsync(order.Id, new CreateGoodsReceiptRequest(DateTimeOffset.UtcNow, null, [new(poLine.Id, 1m), new(poLine.Id, 1m)]), "receipt-key-4")).Error);
+            }
+
+            await using (var integrityCheck = new SmartShopPosDbContext(options))
+            {
+                integrityCheck.GoodsReceiptLines.Add(new GoodsReceiptLine(org.Id, first.Value!.Id,
+                    otherOrder.Id, otherPoLine.Id, 1m));
+                await Assert.ThrowsAsync<DbUpdateException>(() => integrityCheck.SaveChangesAsync());
+                integrityCheck.ChangeTracker.Clear();
             }
 
             await using var verify = new SmartShopPosDbContext(options);

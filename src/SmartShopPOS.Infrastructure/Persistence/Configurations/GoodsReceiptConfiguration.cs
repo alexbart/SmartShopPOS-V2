@@ -11,6 +11,8 @@ public sealed class GoodsReceiptConfiguration : IEntityTypeConfiguration<GoodsRe
         builder.ToTable("goods_receipts");
         builder.HasKey(x => x.Id);
         builder.HasAlternateKey(x => new { x.OrganizationId, x.Id }).HasName("ak_goods_receipts_organization_id_id");
+        builder.HasAlternateKey(x => new { x.OrganizationId, x.PurchaseOrderId, x.Id })
+            .HasName("ak_goods_receipts_organization_order_id");
         builder.Property(x => x.ReceiptNumber).HasMaxLength(32).IsRequired();
         builder.Property(x => x.ReceivedAt).IsRequired();
         builder.Property(x => x.Notes).HasMaxLength(1000);
@@ -37,8 +39,8 @@ public sealed class GoodsReceiptLineConfiguration : IEntityTypeConfiguration<Goo
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.HasIndex(x => new { x.OrganizationId, x.GoodsReceiptId, x.PurchaseOrderLineId }).IsUnique().HasDatabaseName("ux_goods_receipt_lines_receipt_order_line");
         builder.HasIndex(x => new { x.OrganizationId, x.PurchaseOrderLineId }).HasDatabaseName("ix_goods_receipt_lines_organization_order_line");
-        builder.HasOne<GoodsReceipt>().WithMany().HasForeignKey(x => new { x.OrganizationId, x.GoodsReceiptId })
-            .HasPrincipalKey(x => new { x.OrganizationId, x.Id }).OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<GoodsReceipt>().WithMany().HasForeignKey(x => new { x.OrganizationId, x.PurchaseOrderId, x.GoodsReceiptId })
+            .HasPrincipalKey(x => new { x.OrganizationId, x.PurchaseOrderId, x.Id }).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<PurchaseOrderLine>().WithMany().HasForeignKey(x => new { x.OrganizationId, x.PurchaseOrderId, x.PurchaseOrderLineId })
             .HasPrincipalKey(x => new { x.OrganizationId, x.PurchaseOrderId, x.Id }).OnDelete(DeleteBehavior.Restrict);
     }
