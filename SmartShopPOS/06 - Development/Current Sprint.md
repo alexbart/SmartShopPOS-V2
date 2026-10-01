@@ -99,3 +99,13 @@
 **Decision:** Fully received orders remain Submitted. Submitted line terms remain immutable through ordinary APIs. A partially or fully received PO may be cancelled, which prevents further receipts without reversing accepted receipts or inventory movements. Over-receiving remains prohibited, and no Closed status or automatic status transition is introduced.
 
 **Next direction:** Purchase-order receiving summaries/details, followed by supplier invoicing and accounts payable before accounting is connected to receipt workflows. No implementation scope is started by this design checkpoint.
+
+## Milestone 15 - Purchase Order Receiving Summary
+
+**Current task:** Read-only PO receiving summary (Prompt 017)
+
+**Status:** The PO receiving-summary endpoint returns document status, derived fulfillment state and totals, and the existing line-level progress.
+
+**Current implementation:** Summary values are calculated from purchase orders, PO lines, and receipt lines with bounded database queries. The endpoint reuses `purchase_orders.lines.view` and selected-branch access. It makes no writes and does not change PO status.
+
+**Deferred:** Receiving dashboard/report views, PO status automation, supplier invoicing/accounts payable, and accounting integration.

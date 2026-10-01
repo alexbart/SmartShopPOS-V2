@@ -123,6 +123,18 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.True(lineResponse.TryGetProperty("receivedQuantity", out _));
         Assert.True(lineResponse.TryGetProperty("remainingQuantity", out _));
         Assert.True(lineResponse.TryGetProperty("isFullyReceived", out _));
+        var receivingSummaryPath = document.RootElement.GetProperty("paths")
+            .GetProperty("/api/v1/purchase-orders/{purchaseOrderId}/receiving-summary").GetProperty("get");
+        Assert.True(receivingSummaryPath.GetProperty("responses").TryGetProperty("200", out _));
+        Assert.True(receivingSummaryPath.GetProperty("security")[0].TryGetProperty("authenticationCookie", out _));
+        Assert.True(receivingSummaryPath.GetProperty("security")[0].TryGetProperty("sessionCookie", out _));
+        var receivingSummaryResponse = document.RootElement.GetProperty("components").GetProperty("schemas")
+            .GetProperty("PurchaseOrderReceivingSummaryResponse").GetProperty("properties");
+        Assert.True(receivingSummaryResponse.TryGetProperty("receivingState", out _));
+        Assert.True(receivingSummaryResponse.TryGetProperty("orderedQuantity", out _));
+        Assert.True(receivingSummaryResponse.TryGetProperty("receivedQuantity", out _));
+        Assert.True(receivingSummaryResponse.TryGetProperty("remainingQuantity", out _));
+        Assert.True(receivingSummaryResponse.TryGetProperty("lines", out _));
 
         Assert.False(document.RootElement
             .GetProperty("paths")
@@ -165,6 +177,8 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Equal(HttpStatusCode.Unauthorized, anonymousPurchaseOrderCreate.StatusCode);
         using var anonymousPurchaseOrderLineList = await client.GetAsync($"/api/v1/purchase-orders/{Guid.NewGuid()}/lines");
         Assert.Equal(HttpStatusCode.Unauthorized, anonymousPurchaseOrderLineList.StatusCode);
+        using var anonymousReceivingSummary = await client.GetAsync($"/api/v1/purchase-orders/{Guid.NewGuid()}/receiving-summary");
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousReceivingSummary.StatusCode);
         var lineBody = new { productId = Guid.NewGuid(), quantity = 1m, unitCost = 2m, notes = (string?)null };
         using var anonymousPurchaseOrderLineCreate = await client.PostAsJsonAsync(
             $"/api/v1/purchase-orders/{Guid.NewGuid()}/lines", lineBody);

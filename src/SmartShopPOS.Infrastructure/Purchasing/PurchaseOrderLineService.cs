@@ -30,21 +30,50 @@ public sealed class PurchaseOrderLineService(
         if (!await branchAccessService.CanOperateInBranchAsync(order.BranchId, "purchase_orders.lines.view", cancellationToken))
             return PurchaseOrderLineResult<IReadOnlyList<PurchaseOrderLineResponse>>.Failure(PurchaseOrderLineError.Forbidden, BranchAccessMessage);
 
+        var responses = await LoadLineProgressAsync(purchaseOrderId, cancellationToken);
+        return PurchaseOrderLineResult<IReadOnlyList<PurchaseOrderLineResponse>>.Success(responses);
+    }
+
+    public async Task<PurchaseOrderLineResult<PurchaseOrderReceivingSummaryResponse>> GetReceivingSummaryAsync(
+        Guid purchaseOrderId, CancellationToken cancellationToken = default)
+    {
+        var authorization = await AuthorizeAsync("purchase_orders.lines.view", cancellationToken);
+        if (authorization is not null)
+            return PurchaseOrderLineResult<PurchaseOrderReceivingSummaryResponse>.Failure(authorization.Value, Message(authorization.Value));
+
+        var order = await LoadOrderAsync(purchaseOrderId, tracked: false, cancellationToken);
+        if (order is null)
+            return PurchaseOrderLineResult<PurchaseOrderReceivingSummaryResponse>.Failure(PurchaseOrderLineError.NotFound, "Purchase order not found.");
+        if (!await branchAccessService.CanOperateInBranchAsync(order.BranchId, "purchase_orders.lines.view", cancellationToken))
+            return PurchaseOrderLineResult<PurchaseOrderReceivingSummaryResponse>.Failure(PurchaseOrderLineError.Forbidden, BranchAccessMessage);
+
+        var lines = await LoadLineProgressAsync(purchaseOrderId, cancellationToken);
+        var orderedQuantity = lines.Sum(line => line.Quantity);
+        var receivedQuantity = lines.Sum(line => line.ReceivedQuantity);
+        var receivingState = lines.Count == 0 || receivedQuantity == 0m
+            ? "NotReceived"
+            : lines.All(line => line.IsFullyReceived) ? "FullyReceived" : "PartiallyReceived";
+        var summary = new PurchaseOrderReceivingSummaryResponse(order.Id, order.OrderNumber, order.Status.ToString(),
+            receivingState, orderedQuantity, receivedQuantity, orderedQuantity - receivedQuantity, lines);
+        return PurchaseOrderLineResult<PurchaseOrderReceivingSummaryResponse>.Success(summary);
+    }
+
+    private async Task<IReadOnlyList<PurchaseOrderLineResponse>> LoadLineProgressAsync(
+        Guid purchaseOrderId, CancellationToken cancellationToken)
+    {
+        var organizationId = currentUser.OrganizationId!.Value;
         var lines = await dbContext.PurchaseOrderLines.AsNoTracking()
             .Include(line => line.Product)
-            .Where(line => line.OrganizationId == currentUser.OrganizationId && line.PurchaseOrderId == purchaseOrderId)
+            .Where(line => line.OrganizationId == organizationId && line.PurchaseOrderId == purchaseOrderId)
             .OrderBy(line => line.CreatedAt)
             .ToListAsync(cancellationToken);
 
         var receivedTotals = await dbContext.GoodsReceiptLines.AsNoTracking()
-            .Where(receiptLine => receiptLine.OrganizationId == currentUser.OrganizationId &&
-                receiptLine.PurchaseOrderId == purchaseOrderId)
+            .Where(receiptLine => receiptLine.OrganizationId == organizationId && receiptLine.PurchaseOrderId == purchaseOrderId)
             .GroupBy(receiptLine => receiptLine.PurchaseOrderLineId)
             .ToDictionaryAsync(group => group.Key, group => group.Sum(receiptLine => receiptLine.QuantityReceived), cancellationToken);
 
-        var responses = lines.Select(line => ToResponse(line, line.Product,
-            receivedTotals.GetValueOrDefault(line.Id))).ToList();
-        return PurchaseOrderLineResult<IReadOnlyList<PurchaseOrderLineResponse>>.Success(responses);
+        return lines.Select(line => ToResponse(line, line.Product, receivedTotals.GetValueOrDefault(line.Id))).ToList();
     }
 
     public async Task<PurchaseOrderLineResult<PurchaseOrderLineResponse>> CreateAsync(

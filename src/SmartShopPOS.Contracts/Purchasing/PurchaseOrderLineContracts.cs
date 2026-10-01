@@ -21,3 +21,13 @@ public sealed record PurchaseOrderLineResponse(
     decimal ReceivedQuantity,
     decimal RemainingQuantity,
     bool IsFullyReceived);
+
+public sealed record PurchaseOrderReceivingSummaryResponse(
+    Guid PurchaseOrderId,
+    string OrderNumber,
+    string Status,
+    string ReceivingState,
+    decimal OrderedQuantity,
+    decimal ReceivedQuantity,
+    decimal RemainingQuantity,
+    IReadOnlyList<PurchaseOrderLineResponse> Lines);

@@ -47,6 +47,18 @@ public static class PurchaseOrderEndpoints
         .ProducesProblem(StatusCodes.Status403Forbidden)
         .ProducesProblem(StatusCodes.Status404NotFound);
 
+        group.MapGet("/{purchaseOrderId:guid}/receiving-summary", async (Guid purchaseOrderId,
+            IPurchaseOrderLineService service, CancellationToken cancellationToken) =>
+        {
+            var result = await service.GetReceivingSummaryAsync(purchaseOrderId, cancellationToken);
+            return result.IsSuccess ? Results.Ok(result.Value) : Failure(result.Error, result.Message);
+        })
+        .WithName("GetPurchaseOrderReceivingSummary")
+        .Produces<PurchaseOrderReceivingSummaryResponse>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status401Unauthorized)
+        .ProducesProblem(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status404NotFound);
+
         group.MapPut("/{purchaseOrderId:guid}", async (Guid purchaseOrderId, PurchaseOrderUpsertRequest request, IPurchaseOrderService service, CancellationToken cancellationToken) =>
         {
             var result = await service.UpdateAsync(purchaseOrderId, request, cancellationToken);

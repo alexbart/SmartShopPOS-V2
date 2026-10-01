@@ -205,11 +205,16 @@ public sealed class PurchaseOrderLinePersistenceTests
             var otherAccess = new BranchAccessService(context, otherCurrentUser, permissions);
             var otherService = new PurchaseOrderLineService(context, otherCurrentUser, permissions, otherAccess);
             Assert.Equal(PurchaseOrderLineError.NotFound, (await otherService.ListAsync(draftOrder.Id)).Error);
+            Assert.Equal(PurchaseOrderLineError.NotFound, (await otherService.GetReceivingSummaryAsync(draftOrder.Id)).Error);
             Assert.Equal(PurchaseOrderLineError.NotFound,
                 (await otherService.UpdateAsync(draftOrder.Id, created.Value.Id,
                     new PurchaseOrderLineUpsertRequest(firstProduct.Id, 1m, 1m, null))).Error);
             Assert.Equal(PurchaseOrderLineError.NotFound, (await otherService.DeleteAsync(draftOrder.Id, created.Value.Id)).Error);
             Assert.Single((await otherService.ListAsync(foreignOrder.Id)).Value!);
+            Assert.Equal(PurchaseOrderLineError.NotFound, (await service.GetReceivingSummaryAsync(foreignOrder.Id)).Error);
+            var foreignSummary = await otherService.GetReceivingSummaryAsync(foreignOrder.Id);
+            Assert.True(foreignSummary.IsSuccess, foreignSummary.Message);
+            Assert.Equal("NotReceived", foreignSummary.Value!.ReceivingState);
 
             context.PurchaseOrderLines.Add(new PurchaseOrderLine(organization.Id, draftOrder.Id, foreignProduct.Id, 1m, 1m));
             await Assert.ThrowsAsync<DbUpdateException>(() => context.SaveChangesAsync());

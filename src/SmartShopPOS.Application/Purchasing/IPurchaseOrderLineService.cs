@@ -6,6 +6,8 @@ public interface IPurchaseOrderLineService
 {
     Task<PurchaseOrderLineResult<IReadOnlyList<PurchaseOrderLineResponse>>> ListAsync(
         Guid purchaseOrderId, CancellationToken cancellationToken = default);
+    Task<PurchaseOrderLineResult<PurchaseOrderReceivingSummaryResponse>> GetReceivingSummaryAsync(
+        Guid purchaseOrderId, CancellationToken cancellationToken = default);
     Task<PurchaseOrderLineResult<PurchaseOrderLineResponse>> CreateAsync(
         Guid purchaseOrderId, PurchaseOrderLineUpsertRequest request, CancellationToken cancellationToken = default);
     Task<PurchaseOrderLineResult<PurchaseOrderLineResponse>> UpdateAsync(

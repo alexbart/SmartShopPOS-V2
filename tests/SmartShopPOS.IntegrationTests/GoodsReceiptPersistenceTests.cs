@@ -20,6 +20,7 @@ public sealed class GoodsReceiptPersistenceTests
         var org = new Organization("Receipt test", $"receipt-{Guid.NewGuid():N}");
         var user = new User(org.Id, $"receipt-{Guid.NewGuid():N}@example.test", "Receipt operator", "test-hash");
         var branch = new Branch(org.Id, "MAIN", "Main");
+        var unassignedBranch = new Branch(org.Id, "ALT", "Unassigned");
         var supplier = new Supplier(org.Id, "SUP-001", "Supplier");
         var category = new Category(org.Id, "General");
         var brand = new Brand(org.Id, "House");
@@ -35,6 +36,7 @@ public sealed class GoodsReceiptPersistenceTests
         var otherOrder = new PurchaseOrder(org.Id, supplier.Id, branch.Id, $"PO-{Guid.NewGuid():N}"[..20], DateTimeOffset.UtcNow, null, null, user.Id);
         otherOrder.Submit(user.Id);
         var otherPoLine = new PurchaseOrderLine(org.Id, otherOrder.Id, product.Id, 5m, 3m);
+        var emptyOrder = new PurchaseOrder(org.Id, supplier.Id, branch.Id, $"PO-{Guid.NewGuid():N}"[..20], DateTimeOffset.UtcNow, null, null, user.Id);
         var sessionId = Guid.NewGuid();
         var session = new AuthenticationSession(user.Id, org.Id, sessionId, $"receipt-session-{Guid.NewGuid():N}");
         session.SetSelectedBranch(branch.Id);
@@ -42,8 +44,8 @@ public sealed class GoodsReceiptPersistenceTests
         await using (var setup = new SmartShopPosDbContext(options))
         {
             await setup.Database.MigrateAsync();
-            setup.AddRange(org, user, branch, supplier, category, brand, secondBrand, unit, tax, product, secondProduct,
-                order, poLine, secondPoLine, otherOrder, otherPoLine, session, assignment);
+            setup.AddRange(org, user, branch, unassignedBranch, supplier, category, brand, secondBrand, unit, tax, product, secondProduct,
+                order, poLine, secondPoLine, otherOrder, otherPoLine, emptyOrder, session, assignment);
             await setup.SaveChangesAsync();
         }
 
@@ -56,6 +58,20 @@ public sealed class GoodsReceiptPersistenceTests
             {
                 var access = new BranchAccessService(context, currentUser, permission);
                 var service = new GoodsReceiptService(context, currentUser, permission, access);
+                var summaryService = new PurchaseOrderLineService(context, currentUser, permission, access);
+                var initialSummary = await summaryService.GetReceivingSummaryAsync(order.Id);
+                Assert.True(initialSummary.IsSuccess, initialSummary.Message);
+                Assert.Equal("NotReceived", initialSummary.Value!.ReceivingState);
+                Assert.Equal(8.75m, initialSummary.Value.OrderedQuantity);
+                Assert.Equal(0m, initialSummary.Value.ReceivedQuantity);
+                Assert.Equal(8.75m, initialSummary.Value.RemainingQuantity);
+                Assert.Equal(2, initialSummary.Value.Lines.Count);
+                var emptySummary = await summaryService.GetReceivingSummaryAsync(emptyOrder.Id);
+                Assert.True(emptySummary.IsSuccess, emptySummary.Message);
+                Assert.Equal("NotReceived", emptySummary.Value!.ReceivingState);
+                Assert.Equal(0m, emptySummary.Value.OrderedQuantity);
+                Assert.Empty(emptySummary.Value.Lines);
+
                 var request = new CreateGoodsReceiptRequest(DateTimeOffset.UtcNow, "Initial delivery", [new(poLine.Id, 3m)]);
                 first = await service.CreateAsync(order.Id, request, "receipt-key-1");
                 Assert.True(first.IsSuccess, first.Message);
@@ -99,6 +115,18 @@ public sealed class GoodsReceiptPersistenceTests
                     Assert.True(otherOrderReceipt.IsSuccess, otherOrderReceipt.Message);
                 }
 
+                await using (var cancellationContext = new SmartShopPosDbContext(options))
+                {
+                    var cancellationAccess = new BranchAccessService(cancellationContext, currentUser, permission);
+                    var purchaseOrders = new PurchaseOrderService(cancellationContext, currentUser, permission, cancellationAccess);
+                    var cancelled = await purchaseOrders.CancelAsync(otherOrder.Id);
+                    Assert.True(cancelled.IsSuccess, cancelled.Message);
+                    var receiptService = new GoodsReceiptService(cancellationContext, currentUser, permission, cancellationAccess);
+                    Assert.Equal(GoodsReceiptError.Conflict, (await receiptService.CreateAsync(otherOrder.Id,
+                        new CreateGoodsReceiptRequest(DateTimeOffset.UtcNow, null, [new(otherPoLine.Id, 0.1m)]),
+                        "receipt-cancelled-po")).Error);
+                }
+
                 var progress = await new PurchaseOrderLineService(context, currentUser, permission, access).ListAsync(order.Id);
                 Assert.True(progress.IsSuccess, progress.Message);
                 var progressLines = progress.Value!;
@@ -113,6 +141,15 @@ public sealed class GoodsReceiptPersistenceTests
                 Assert.Equal(0m, beans.RemainingQuantity);
                 Assert.True(beans.IsFullyReceived);
 
+                var summary = await summaryService.GetReceivingSummaryAsync(order.Id);
+                Assert.True(summary.IsSuccess, summary.Message);
+                Assert.Equal("Submitted", summary.Value!.Status);
+                Assert.Equal("PartiallyReceived", summary.Value.ReceivingState);
+                Assert.Equal(8.75m, summary.Value.OrderedQuantity);
+                Assert.Equal(8.25m, summary.Value.ReceivedQuantity);
+                Assert.Equal(0.5m, summary.Value.RemainingQuantity);
+                Assert.Equal(2, summary.Value.Lines.Count);
+
                 var otherProgress = await new PurchaseOrderLineService(context, currentUser, permission, access).ListAsync(otherOrder.Id);
                 Assert.True(otherProgress.IsSuccess, otherProgress.Message);
                 var otherRice = otherProgress.Value!.Single();
@@ -120,6 +157,62 @@ public sealed class GoodsReceiptPersistenceTests
                 Assert.Equal(5m, otherRice.ReceivedQuantity);
                 Assert.Equal(0m, otherRice.RemainingQuantity);
                 Assert.True(otherRice.IsFullyReceived);
+            }
+
+            await using (var readOnlyContext = new SmartShopPosDbContext(options))
+            {
+                var countsBefore = (
+                    await readOnlyContext.GoodsReceipts.CountAsync(x => x.OrganizationId == org.Id),
+                    await readOnlyContext.StockMovements.CountAsync(x => x.OrganizationId == org.Id),
+                    await readOnlyContext.InventoryBalances.CountAsync(x => x.OrganizationId == org.Id));
+                var balancesBefore = await readOnlyContext.InventoryBalances.Where(x => x.OrganizationId == org.Id)
+                    .OrderBy(x => x.Id).Select(x => new { x.Id, x.QuantityOnHand }).ToListAsync();
+                var statusesBefore = await readOnlyContext.PurchaseOrders.Where(x => x.OrganizationId == org.Id)
+                    .OrderBy(x => x.Id).Select(x => new { x.Id, x.Status }).ToListAsync();
+                var readOnlyAccess = new BranchAccessService(readOnlyContext, currentUser, permission);
+                var readOnlySummaryService = new PurchaseOrderLineService(readOnlyContext, currentUser, permission, readOnlyAccess);
+                var cancelledSummary = await readOnlySummaryService.GetReceivingSummaryAsync(otherOrder.Id);
+                Assert.True(cancelledSummary.IsSuccess, cancelledSummary.Message);
+                Assert.Equal("Cancelled", cancelledSummary.Value!.Status);
+                Assert.Equal("FullyReceived", cancelledSummary.Value.ReceivingState);
+                Assert.Equal(5m, cancelledSummary.Value.ReceivedQuantity);
+                Assert.True((await readOnlySummaryService.GetReceivingSummaryAsync(otherOrder.Id)).IsSuccess);
+                var countsAfter = (
+                    await readOnlyContext.GoodsReceipts.CountAsync(x => x.OrganizationId == org.Id),
+                    await readOnlyContext.StockMovements.CountAsync(x => x.OrganizationId == org.Id),
+                    await readOnlyContext.InventoryBalances.CountAsync(x => x.OrganizationId == org.Id));
+                var balancesAfter = await readOnlyContext.InventoryBalances.Where(x => x.OrganizationId == org.Id)
+                    .OrderBy(x => x.Id).Select(x => new { x.Id, x.QuantityOnHand }).ToListAsync();
+                var statusesAfter = await readOnlyContext.PurchaseOrders.Where(x => x.OrganizationId == org.Id)
+                    .OrderBy(x => x.Id).Select(x => new { x.Id, x.Status }).ToListAsync();
+                Assert.Equal(countsBefore, countsAfter);
+                Assert.Equal(balancesBefore, balancesAfter);
+                Assert.Equal(statusesBefore, statusesAfter);
+            }
+
+            await using (var deniedContext = new SmartShopPosDbContext(options))
+            {
+                var deniedUser = new TestCurrentUser(org.Id, user.Id, sessionId, branch.Id);
+                var deniedPermissions = new DenyPermissions();
+                var deniedService = new PurchaseOrderLineService(deniedContext, deniedUser, deniedPermissions,
+                    new BranchAccessService(deniedContext, deniedUser, deniedPermissions));
+                Assert.Equal(PurchaseOrderLineError.Forbidden,
+                    (await deniedService.GetReceivingSummaryAsync(order.Id)).Error);
+            }
+
+            await using (var wrongBranchContext = new SmartShopPosDbContext(options))
+            {
+                var wrongBranchUser = new TestCurrentUser(org.Id, user.Id, sessionId, Guid.NewGuid());
+                var wrongBranchPermissions = new AllowPermissions();
+                var wrongBranchService = new PurchaseOrderLineService(wrongBranchContext, wrongBranchUser, wrongBranchPermissions,
+                    new BranchAccessService(wrongBranchContext, wrongBranchUser, wrongBranchPermissions));
+                var persistedSession = await wrongBranchContext.AuthenticationSessions.SingleAsync(x => x.SessionId == sessionId);
+                persistedSession.SetSelectedBranch(unassignedBranch.Id);
+                await wrongBranchContext.SaveChangesAsync();
+                Assert.Equal(PurchaseOrderLineError.Forbidden,
+                    (await wrongBranchService.GetReceivingSummaryAsync(order.Id)).Error);
+                persistedSession.SetSelectedBranch(branch.Id);
+                await wrongBranchContext.SaveChangesAsync();
             }
 
             await using (var integrityCheck = new SmartShopPosDbContext(options))
@@ -187,5 +280,10 @@ public sealed class GoodsReceiptPersistenceTests
     private sealed class AllowPermissions : IPermissionChecker
     {
         public Task<bool> HasPermissionAsync(Guid userId, string permissionKey, CancellationToken cancellationToken = default) => Task.FromResult(true);
+    }
+
+    private sealed class DenyPermissions : IPermissionChecker
+    {
+        public Task<bool> HasPermissionAsync(Guid userId, string permissionKey, CancellationToken cancellationToken = default) => Task.FromResult(false);
     }
 }
