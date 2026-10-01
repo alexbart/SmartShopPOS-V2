@@ -117,6 +117,12 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.True(lineRequest.TryGetProperty("unitCost", out _));
         Assert.False(lineRequest.TryGetProperty("organizationId", out _));
         Assert.False(lineRequest.TryGetProperty("purchaseOrderId", out _));
+        var lineResponse = document.RootElement.GetProperty("components").GetProperty("schemas")
+            .GetProperty("PurchaseOrderLineResponse").GetProperty("properties");
+        Assert.True(lineResponse.TryGetProperty("quantity", out _));
+        Assert.True(lineResponse.TryGetProperty("receivedQuantity", out _));
+        Assert.True(lineResponse.TryGetProperty("remainingQuantity", out _));
+        Assert.True(lineResponse.TryGetProperty("isFullyReceived", out _));
 
         Assert.False(document.RootElement
             .GetProperty("paths")

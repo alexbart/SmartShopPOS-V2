@@ -23,12 +23,15 @@ public sealed class GoodsReceiptPersistenceTests
         var supplier = new Supplier(org.Id, "SUP-001", "Supplier");
         var category = new Category(org.Id, "General");
         var brand = new Brand(org.Id, "House");
+        var secondBrand = new Brand(org.Id, "Pantry");
         var unit = new UnitOfMeasure(org.Id, "KG", "Kilogram", "kg");
         var tax = new TaxCategory(org.Id, "VAT", "VAT", 16m);
         var product = new Product(org.Id, "RICE", null, "Rice", null, category.Id, brand.Id, unit.Id, tax.Id);
+        var secondProduct = new Product(org.Id, "BEANS", null, "Beans", null, category.Id, secondBrand.Id, unit.Id, tax.Id);
         var order = new PurchaseOrder(org.Id, supplier.Id, branch.Id, $"PO-{Guid.NewGuid():N}"[..20], DateTimeOffset.UtcNow, null, null, user.Id);
         order.Submit(user.Id);
         var poLine = new PurchaseOrderLine(org.Id, order.Id, product.Id, 5m, 3m);
+        var secondPoLine = new PurchaseOrderLine(org.Id, order.Id, secondProduct.Id, 3.75m, 2m);
         var otherOrder = new PurchaseOrder(org.Id, supplier.Id, branch.Id, $"PO-{Guid.NewGuid():N}"[..20], DateTimeOffset.UtcNow, null, null, user.Id);
         otherOrder.Submit(user.Id);
         var otherPoLine = new PurchaseOrderLine(org.Id, otherOrder.Id, product.Id, 5m, 3m);
@@ -39,7 +42,8 @@ public sealed class GoodsReceiptPersistenceTests
         await using (var setup = new SmartShopPosDbContext(options))
         {
             await setup.Database.MigrateAsync();
-            setup.AddRange(org, user, branch, supplier, category, brand, unit, tax, product, order, poLine, otherOrder, otherPoLine, session, assignment);
+            setup.AddRange(org, user, branch, supplier, category, brand, secondBrand, unit, tax, product, secondProduct,
+                order, poLine, secondPoLine, otherOrder, otherPoLine, session, assignment);
             await setup.SaveChangesAsync();
         }
 
@@ -78,6 +82,44 @@ public sealed class GoodsReceiptPersistenceTests
                     (await service.CreateAsync(order.Id, new CreateGoodsReceiptRequest(DateTimeOffset.UtcNow, null, [new(poLine.Id, 0.6m)]), "receipt-key-3")).Error);
                 Assert.Equal(GoodsReceiptError.Invalid,
                     (await service.CreateAsync(order.Id, new CreateGoodsReceiptRequest(DateTimeOffset.UtcNow, null, [new(poLine.Id, 1m), new(poLine.Id, 1m)]), "receipt-key-4")).Error);
+
+                var partial = await service.CreateAsync(order.Id,
+                    new CreateGoodsReceiptRequest(DateTimeOffset.UtcNow, null, [new(secondPoLine.Id, 1.25m)]), "receipt-key-5");
+                Assert.True(partial.IsSuccess, partial.Message);
+                var completion = await service.CreateAsync(order.Id,
+                    new CreateGoodsReceiptRequest(DateTimeOffset.UtcNow, null, [new(secondPoLine.Id, 2.5m)]), "receipt-key-6");
+                Assert.True(completion.IsSuccess, completion.Message);
+
+                await using (var otherOrderContext = new SmartShopPosDbContext(options))
+                {
+                    var otherOrderAccess = new BranchAccessService(otherOrderContext, currentUser, permission);
+                    var otherOrderService = new GoodsReceiptService(otherOrderContext, currentUser, permission, otherOrderAccess);
+                    var otherOrderReceipt = await otherOrderService.CreateAsync(otherOrder.Id,
+                        new CreateGoodsReceiptRequest(DateTimeOffset.UtcNow, null, [new(otherPoLine.Id, 5m)]), "receipt-key-other-po");
+                    Assert.True(otherOrderReceipt.IsSuccess, otherOrderReceipt.Message);
+                }
+
+                var progress = await new PurchaseOrderLineService(context, currentUser, permission, access).ListAsync(order.Id);
+                Assert.True(progress.IsSuccess, progress.Message);
+                var progressLines = progress.Value!;
+                var rice = progressLines.Single(line => line.Id == poLine.Id);
+                Assert.Equal(5m, rice.Quantity);
+                Assert.Equal(4.5m, rice.ReceivedQuantity);
+                Assert.Equal(0.5m, rice.RemainingQuantity);
+                Assert.False(rice.IsFullyReceived);
+                var beans = progressLines.Single(line => line.Id == secondPoLine.Id);
+                Assert.Equal(3.75m, beans.Quantity);
+                Assert.Equal(3.75m, beans.ReceivedQuantity);
+                Assert.Equal(0m, beans.RemainingQuantity);
+                Assert.True(beans.IsFullyReceived);
+
+                var otherProgress = await new PurchaseOrderLineService(context, currentUser, permission, access).ListAsync(otherOrder.Id);
+                Assert.True(otherProgress.IsSuccess, otherProgress.Message);
+                var otherRice = otherProgress.Value!.Single();
+                Assert.Equal(5m, otherRice.Quantity);
+                Assert.Equal(5m, otherRice.ReceivedQuantity);
+                Assert.Equal(0m, otherRice.RemainingQuantity);
+                Assert.True(otherRice.IsFullyReceived);
             }
 
             await using (var integrityCheck = new SmartShopPosDbContext(options))
@@ -89,20 +131,22 @@ public sealed class GoodsReceiptPersistenceTests
             }
 
             await using var verify = new SmartShopPosDbContext(options);
-            Assert.Equal(2, await verify.GoodsReceipts.CountAsync(x => x.OrganizationId == org.Id));
-            Assert.Equal(2, await verify.GoodsReceiptLines.CountAsync(x => x.OrganizationId == org.Id));
-            Assert.Equal(2, await verify.StockMovements.CountAsync(x => x.OrganizationId == org.Id && x.ReferenceType == "GoodsReceipt"));
+            Assert.Equal(5, await verify.GoodsReceipts.CountAsync(x => x.OrganizationId == org.Id));
+            Assert.Equal(5, await verify.GoodsReceiptLines.CountAsync(x => x.OrganizationId == org.Id));
+            Assert.Equal(5, await verify.StockMovements.CountAsync(x => x.OrganizationId == org.Id && x.ReferenceType == "GoodsReceipt"));
             var movements = await verify.StockMovements.Where(x => x.OrganizationId == org.Id && x.ReferenceType == "GoodsReceipt").ToListAsync();
             Assert.All(movements, movement =>
             {
                 Assert.Equal(MovementType.Receipt, movement.MovementType);
                 Assert.Equal(branch.Id, movement.BranchId);
-                Assert.Equal(product.Id, movement.ProductId);
+                Assert.Contains(movement.ProductId, new[] { product.Id, secondProduct.Id });
                 Assert.Equal(user.Id, movement.CreatedByUserId);
                 Assert.True(movement.Quantity > 0m);
             });
             var balance = await verify.InventoryBalances.SingleAsync(x => x.OrganizationId == org.Id && x.BranchId == branch.Id && x.ProductId == product.Id);
-            Assert.Equal(4.5m, balance.QuantityOnHand);
+            Assert.Equal(9.5m, balance.QuantityOnHand);
+            Assert.Equal(3.75m, await verify.InventoryBalances.Where(x => x.OrganizationId == org.Id && x.BranchId == branch.Id && x.ProductId == secondProduct.Id)
+                .Select(x => x.QuantityOnHand).SingleAsync());
         }
         finally
         {

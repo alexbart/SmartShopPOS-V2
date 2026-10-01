@@ -79,3 +79,13 @@
 **Current implementation:** Receipts can post partial quantities against Submitted POs. Receipt creation locks the PO in a serializable transaction, validates cumulative received amounts, creates receipt lines and positive Receipt movements, and updates InventoryBalance in the same transaction. Organization-scoped persisted idempotency binds a request hash to its receipt. Receipt lines are the received-quantity source; PO status and unit costs remain unchanged.
 
 **Deferred:** Receipt reversal, purchasing valuation, supplier invoices/AP, accounting, payments, tax, and sales workflows.
+
+## Milestone 13 - Purchase Order Receiving Progress
+
+**Current task:** Derived PO-line receiving progress (Prompt 015)
+
+**Status:** The PO-lines API returns ordered, received, remaining, and fully-received values derived from persisted receipt lines.
+
+**Current implementation:** Receipt quantities are aggregated in the database with the PO-line query. No receiving progress is persisted or synchronized separately; newly posted receipts are reflected automatically. PO lifecycle status remains unchanged by receiving progress.
+
+**Deferred:** Receiving dashboards, automated PO status transitions, and other purchasing lifecycle changes.

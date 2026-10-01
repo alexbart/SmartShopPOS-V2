@@ -17,4 +17,7 @@ public sealed record PurchaseOrderLineResponse(
     decimal LineTotal,
     string? Notes,
     DateTimeOffset CreatedAt,
-    DateTimeOffset UpdatedAt);
+    DateTimeOffset UpdatedAt,
+    decimal ReceivedQuantity,
+    decimal RemainingQuantity,
+    bool IsFullyReceived);

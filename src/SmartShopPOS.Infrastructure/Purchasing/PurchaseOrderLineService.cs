@@ -31,11 +31,20 @@ public sealed class PurchaseOrderLineService(
             return PurchaseOrderLineResult<IReadOnlyList<PurchaseOrderLineResponse>>.Failure(PurchaseOrderLineError.Forbidden, BranchAccessMessage);
 
         var lines = await dbContext.PurchaseOrderLines.AsNoTracking()
+            .Include(line => line.Product)
             .Where(line => line.OrganizationId == currentUser.OrganizationId && line.PurchaseOrderId == purchaseOrderId)
             .OrderBy(line => line.CreatedAt)
-            .Select(line => ToResponse(line, line.Product))
             .ToListAsync(cancellationToken);
-        return PurchaseOrderLineResult<IReadOnlyList<PurchaseOrderLineResponse>>.Success(lines);
+
+        var receivedTotals = await dbContext.GoodsReceiptLines.AsNoTracking()
+            .Where(receiptLine => receiptLine.OrganizationId == currentUser.OrganizationId &&
+                receiptLine.PurchaseOrderId == purchaseOrderId)
+            .GroupBy(receiptLine => receiptLine.PurchaseOrderLineId)
+            .ToDictionaryAsync(group => group.Key, group => group.Sum(receiptLine => receiptLine.QuantityReceived), cancellationToken);
+
+        var responses = lines.Select(line => ToResponse(line, line.Product,
+            receivedTotals.GetValueOrDefault(line.Id))).ToList();
+        return PurchaseOrderLineResult<IReadOnlyList<PurchaseOrderLineResponse>>.Success(responses);
     }
 
     public async Task<PurchaseOrderLineResult<PurchaseOrderLineResponse>> CreateAsync(
@@ -288,9 +297,10 @@ public sealed class PurchaseOrderLineService(
         return null;
     }
 
-    private static PurchaseOrderLineResponse ToResponse(PurchaseOrderLine line, Product product) => new(
+    private static PurchaseOrderLineResponse ToResponse(PurchaseOrderLine line, Product product, decimal receivedQuantity = 0m) => new(
         line.Id, line.PurchaseOrderId, line.ProductId, product.Name, product.Sku,
-        line.Quantity, line.UnitCost, line.LineTotal, line.Notes, line.CreatedAt, line.UpdatedAt);
+        line.Quantity, line.UnitCost, line.LineTotal, line.Notes, line.CreatedAt, line.UpdatedAt,
+        receivedQuantity, line.Quantity - receivedQuantity, receivedQuantity == line.Quantity);
 
     private static PurchaseOrderLineResult<PurchaseOrderLineResponse> LifecycleConflict() =>
         PurchaseOrderLineResult<PurchaseOrderLineResponse>.Failure(PurchaseOrderLineError.Conflict, LifecycleMessage);

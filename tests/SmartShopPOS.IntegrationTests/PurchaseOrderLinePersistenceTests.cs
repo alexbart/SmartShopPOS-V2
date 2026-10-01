@@ -134,6 +134,18 @@ public sealed class PurchaseOrderLinePersistenceTests
             Assert.True(listed.IsSuccess, listed.Message);
             Assert.Equal(3, listed.Value!.Count);
             Assert.Equal("Rice", listed.Value.Single(line => line.ProductId == firstProduct.Id).ProductName);
+            Assert.All(listed.Value, line =>
+            {
+                Assert.Equal(0m, line.ReceivedQuantity);
+                Assert.Equal(line.Quantity, line.RemainingQuantity);
+                Assert.False(line.IsFullyReceived);
+            });
+            var cancelledProgress = await service.ListAsync(cancelledOrder.Id);
+            Assert.True(cancelledProgress.IsSuccess, cancelledProgress.Message);
+            var cancelledLines = cancelledProgress.Value!;
+            Assert.Equal(0m, cancelledLines.Single().ReceivedQuantity);
+            Assert.Equal(cancelledLine.Quantity, cancelledLines.Single().RemainingQuantity);
+            Assert.False(cancelledLines.Single().IsFullyReceived);
 
             Assert.Equal(PurchaseOrderLineError.NotFound, (await service.ListAsync(foreignOrder.Id)).Error);
             Assert.Equal(PurchaseOrderLineError.NotFound,
