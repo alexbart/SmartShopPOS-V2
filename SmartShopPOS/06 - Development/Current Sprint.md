@@ -124,7 +124,13 @@
 
 **Current task:** Design-only supplier invoice policy checkpoint (Prompt 019)
 
-**Status:** Accepted MVP policies are documented in ADR-015. No invoice schema, API, AP ledger, payment, or accounting implementation has started.
+**Status:** Accepted MVP policies are documented in ADR-015; implementation progress is tracked under Milestone 18.
+
+## Milestone 18 - Supplier Invoice Foundation
+
+**Current task:** Supplier invoice document foundation (Prompt 020).
+
+**Status:** In progress on `feature/supplier-invoice-foundation`. Adds organization-scoped supplier invoice documents and lines, PO-backed and non-PO drafts, sequential numbering, tax-document snapshots, calculated decimal totals, controlled draft/post/cancel lifecycle, permissions, and PostgreSQL integrity. Posting does not create journals, payments, or inventory changes. Non-PO posting and PO/tax variance approvals remain blocked until classification and approval rules exist; tax-law treatment and eTIMS remain deferred.
 
 **Decisions:** PO-backed and separately classified non-PO invoices are supported. Partial invoices aggregate posted invoice quantities by PO line. Mismatches can be captured as Draft; variance approval is required before posting when invoiced exceeds received or price/tax/document totals differ. Quantity above ordered cannot post absent formal PO amendment. The MVP does not allocate invoice lines to individual receipts. Supplier invoice numbers retain their original text and use a normalized duplicate key. The MVP supports KES only; tax amounts from the supplier document are retained and checked against configured calculations.
 

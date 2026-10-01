@@ -1,5 +1,17 @@
 # Purchasing Foundation
 
+## Supplier invoices (Prompt 020)
+
+Supplier invoices are organization-scoped documents separate from PO commitments and goods receipts. Both PO-backed invoices and non-PO drafts are supported; the supplier invoice number is preserved as received and a normalized comparison value (Unicode NFC, trimmed outside whitespace, invariant uppercase) is unique per organization and supplier. Internal `SI-000001` numbering uses an organization-scoped PostgreSQL counter and a unique constraint.
+
+Invoices and lines use decimal PostgreSQL precision. Line net values and invoice net/tax/gross totals are calculated server-side; supplier document net, VAT, other-tax, and gross values are stored separately for comparison. Due dates are supplied explicitly and are never inferred. Tax categories can classify lines, but this slice does not implement tax rates, eTIMS, or tax-law rules.
+
+Draft invoices can be edited, have lines added/updated/deleted, be posted, or cancelled. Posted and cancelled documents cannot be edited; only Draft invoices can be cancelled. Posting does not create journal entries, payments, inventory movements, or valuation. PO-backed posting requires a submitted PO, matching supplier and PO-line ownership, exact ordered unit price, and posted quantity not exceeding received or ordered quantity; monetary totals must agree with the supplier document. Variance approval is not yet implemented. Non-PO invoices can be recorded as drafts, but posting is blocked until the expenditure classification and approval policy is implemented. This preserves ADR-015 without inventing account mappings or an approval bypass.
+
+The database enforces organization/supplier/PO ownership and organization/PO-line references with composite foreign keys. A PostgreSQL trigger checks that a PO-backed invoice line's PO matches its invoice because the optional PO relationship cannot be represented by a nullable composite alternate key. Posting runs transactionally with serializable isolation so repeated or concurrent post requests cannot create duplicate posted states. Goods receipt remains the only purchasing operation that creates stock movements.
+
+Endpoints: `GET/POST /api/v1/supplier-invoices`, `GET/PUT /api/v1/supplier-invoices/{id}`, line `POST/PUT/DELETE` routes, and `POST /{id}/post` or `/cancel`. Permissions are `supplier_invoices.view`, `.create`, `.update`, `.post`, and `.cancel`. No separate line permissions are needed because line changes use the draft update permission.
+
 ## Purchase Orders
 
 Purchase orders are organization-owned purchasing documents that reference an organization-scoped supplier and a destination branch in that same organization. Tenant identity comes from the authenticated server-side user; supplier and branch identifiers in requests are selectors and are validated against that tenant. Create, update, submit, and cancel require the destination branch to be selected in the server-side operational context and require an active branch assignment and operation permission.

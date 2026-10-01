@@ -66,7 +66,12 @@ public sealed class PermissionConfiguration : IEntityTypeConfiguration<Permissio
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af38"), "purchase_orders.lines.update", "Update purchase order lines"),
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af39"), "purchase_orders.lines.delete", "Delete purchase order lines"),
         new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af3a"), "goods_receipts.view", "View goods receipts"),
-        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af3b"), "goods_receipts.create", "Create goods receipts")
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af3b"), "goods_receipts.create", "Create goods receipts"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af3c"), "supplier_invoices.view", "View supplier invoices"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af3d"), "supplier_invoices.create", "Create supplier invoices"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af3e"), "supplier_invoices.update", "Update draft supplier invoices"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af3f"), "supplier_invoices.post", "Post supplier invoices"),
+        new(new Guid("dd733879-15dd-4bdd-9a1b-068cc4c5af40"), "supplier_invoices.cancel", "Cancel draft supplier invoices")
     ];
 
     public void Configure(EntityTypeBuilder<Permission> builder)

@@ -72,6 +72,15 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
             ,(Path: "/api/v1/purchase-orders/{purchaseOrderId}/receipts", Method: "get")
             ,(Path: "/api/v1/purchase-orders/{purchaseOrderId}/receipts", Method: "post")
             ,(Path: "/api/v1/goods-receipts/{receiptId}", Method: "get")
+            ,(Path: "/api/v1/supplier-invoices", Method: "get")
+            ,(Path: "/api/v1/supplier-invoices", Method: "post")
+            ,(Path: "/api/v1/supplier-invoices/{id}", Method: "get")
+            ,(Path: "/api/v1/supplier-invoices/{id}", Method: "put")
+            ,(Path: "/api/v1/supplier-invoices/{id}/lines", Method: "post")
+            ,(Path: "/api/v1/supplier-invoices/{id}/lines/{lineId}", Method: "put")
+            ,(Path: "/api/v1/supplier-invoices/{id}/lines/{lineId}", Method: "delete")
+            ,(Path: "/api/v1/supplier-invoices/{id}/post", Method: "post")
+            ,(Path: "/api/v1/supplier-invoices/{id}/cancel", Method: "post")
         };
         foreach (var protectedOperation in protectedOperations)
         {
@@ -153,6 +162,20 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.False(receiptRequest.TryGetProperty("branchId", out _));
         Assert.False(receiptRequest.TryGetProperty("organizationId", out _));
 
+        var invoicePaths = document.RootElement.GetProperty("paths");
+        Assert.True(invoicePaths.GetProperty("/api/v1/supplier-invoices").GetProperty("post").GetProperty("responses").TryGetProperty("201", out _));
+        Assert.True(invoicePaths.GetProperty("/api/v1/supplier-invoices/{id}/post").GetProperty("post").GetProperty("responses").TryGetProperty("200", out _));
+        var invoiceRequest = document.RootElement.GetProperty("components").GetProperty("schemas")
+            .GetProperty("SupplierInvoiceCreateRequest").GetProperty("properties");
+        Assert.True(invoiceRequest.TryGetProperty("supplierId", out _));
+        Assert.True(invoiceRequest.TryGetProperty("purchaseOrderId", out _));
+        Assert.True(invoiceRequest.TryGetProperty("supplierDocumentNetAmount", out _));
+        Assert.False(invoiceRequest.TryGetProperty("organizationId", out _));
+        var invoiceResponse = document.RootElement.GetProperty("components").GetProperty("schemas")
+            .GetProperty("SupplierInvoiceResponse").GetProperty("properties");
+        Assert.True(invoiceResponse.TryGetProperty("supplierDocumentGrossAmount", out _));
+        Assert.True(invoiceResponse.TryGetProperty("grossAmount", out _));
+
         using var anonymousList = await client.GetAsync("/api/v1/suppliers");
         Assert.Equal(HttpStatusCode.Unauthorized, anonymousList.StatusCode);
         using var anonymousCreate = await client.PostAsJsonAsync("/api/v1/suppliers", new
@@ -196,6 +219,11 @@ public class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.Equal(HttpStatusCode.Unauthorized, anonymousReceiptCreate.StatusCode);
         using var anonymousReceiptDetail = await client.GetAsync($"/api/v1/goods-receipts/{Guid.NewGuid()}");
         Assert.Equal(HttpStatusCode.Unauthorized, anonymousReceiptDetail.StatusCode);
+        using var anonymousInvoiceList = await client.GetAsync("/api/v1/supplier-invoices");
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousInvoiceList.StatusCode);
+        using var anonymousInvoiceCreate = await client.PostAsJsonAsync("/api/v1/supplier-invoices",
+            new { supplierId = Guid.NewGuid(), invoiceNumber = "INV-1", invoiceDate = "2026-10-01" });
+        Assert.Equal(HttpStatusCode.Unauthorized, anonymousInvoiceCreate.StatusCode);
     }
 }
 

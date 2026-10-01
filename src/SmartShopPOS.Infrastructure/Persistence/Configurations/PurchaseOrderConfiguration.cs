@@ -13,6 +13,8 @@ public sealed class PurchaseOrderConfiguration : IEntityTypeConfiguration<Purcha
         builder.HasKey(order => order.Id);
         builder.HasAlternateKey(order => new { order.OrganizationId, order.Id })
             .HasName("ak_purchase_orders_organization_id_id");
+        builder.HasAlternateKey(order => new { order.OrganizationId, order.SupplierId, order.Id })
+            .HasName("ak_purchase_orders_organization_supplier_id");
         builder.Property(order => order.OrderNumber).HasMaxLength(32).IsRequired();
         builder.Property(order => order.Status).HasConversion<int>().IsRequired();
         builder.Property(order => order.OrderDate).IsRequired();

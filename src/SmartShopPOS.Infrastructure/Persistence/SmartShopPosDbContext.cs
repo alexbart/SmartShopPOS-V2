@@ -36,6 +36,9 @@ public class SmartShopPosDbContext : DbContext
     public DbSet<GoodsReceiptLine> GoodsReceiptLines => Set<GoodsReceiptLine>();
     public DbSet<GoodsReceiptIdempotency> GoodsReceiptIdempotency => Set<GoodsReceiptIdempotency>();
     public DbSet<GoodsReceiptNumberSequence> GoodsReceiptNumberSequences => Set<GoodsReceiptNumberSequence>();
+    public DbSet<SupplierInvoice> SupplierInvoices => Set<SupplierInvoice>();
+    public DbSet<SupplierInvoiceLine> SupplierInvoiceLines => Set<SupplierInvoiceLine>();
+    public DbSet<SupplierInvoiceNumberSequence> SupplierInvoiceNumberSequences => Set<SupplierInvoiceNumberSequence>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
