@@ -109,3 +109,13 @@
 **Current implementation:** Summary values are calculated from purchase orders, PO lines, and receipt lines with bounded database queries. The endpoint reuses `purchase_orders.lines.view` and selected-branch access. It makes no writes and does not change PO status.
 
 **Deferred:** Receiving dashboard/report views, PO status automation, supplier invoicing/accounts payable, and accounting integration.
+
+## Milestone 16 - Supplier Invoice and Accounts Payable Domain Design
+
+**Current task:** Design-only supplier invoice/AP boundary (Prompt 018)
+
+**Status:** Accepted domain boundaries are documented; no supplier invoice, AP, payment, accounting, or tax implementation has started.
+
+**Decision:** Purchase orders, goods receipts, supplier invoices, AP obligations, payments, and accounting journals are separate responsibilities. Three-way matching identifies variance independently of journal posting. Posted invoices are immutable and create the AP obligation; AP settlement is separate. The future double-entry ledger consumes financial events through an explicit integration boundary. eTIMS remains provider-specific, and this checkpoint adds no inventory valuation.
+
+**Open before schema implementation:** PO vs non-PO invoice policy, mismatch/tolerance approval rules, Kenya tax/VAT calculation and snapshots, supplier-number comparison normalization, and multi-currency conversion/functional-currency treatment.
