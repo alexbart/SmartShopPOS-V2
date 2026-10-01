@@ -89,3 +89,13 @@
 **Current implementation:** Receipt quantities are aggregated in the database with the PO-line query. No receiving progress is persisted or synchronized separately; newly posted receipts are reflected automatically. PO lifecycle status remains unchanged by receiving progress.
 
 **Deferred:** Receiving dashboards, automated PO status transitions, and other purchasing lifecycle changes.
+
+## Milestone 14 - Purchase Order Lifecycle Review
+
+**Current task:** Design-only lifecycle checkpoint (Prompt 016)
+
+**Status:** Accepted. PO status is the persisted document lifecycle (Draft, Submitted, Cancelled); receiving state is derived (NotReceived, PartiallyReceived, FullyReceived) from ordered quantities and receipt lines.
+
+**Decision:** Fully received orders remain Submitted. Submitted line terms remain immutable through ordinary APIs. A partially or fully received PO may be cancelled, which prevents further receipts without reversing accepted receipts or inventory movements. Over-receiving remains prohibited, and no Closed status or automatic status transition is introduced.
+
+**Next direction:** Purchase-order receiving summaries/details, followed by supplier invoicing and accounts payable before accounting is connected to receipt workflows. No implementation scope is started by this design checkpoint.
