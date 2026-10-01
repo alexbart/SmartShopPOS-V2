@@ -18,7 +18,8 @@ The platform is designed to grow toward multiple users, terminals, branches, inv
 ## Status
 
 - **Implemented:** Project documentation and .NET solution foundations, organization/user/RBAC domain, cookie-based authentication/session foundation, branch/terminal domain and APIs, explicit user-branch access, server-side operational branch context, organization-scoped product catalog foundation (products, categories, brands, units of measure, tax categories), product pricing foundation (history-aware pricing by product with tenant-safe intervals and versioned API), branch-level inventory balances with an append-only movement ledger, organization-scoped supplier master data, purchase orders with controlled lifecycle and draft product lines, posted partial goods receipts with transactional stock ledger integration and persistent idempotency, derived PO-line receiving progress in the purchase-order lines API, versioned APIs and permissions for these domains, and PostgreSQL migrations.
-- **Next:** Finalize supplier invoice/AP policy decisions before implementation. Supplier invoicing and AP will remain separate from the future double-entry accounting ledger; Sales, payments, integrations, reporting, and the hardware agent remain planned modules.
+- **Design checkpoint:** Supplier invoice/AP boundaries and MVP matching policies are documented in ADR-014 and ADR-015; supplier invoices, AP, payments, tax behavior, and accounting remain unimplemented.
+- **Next:** Define the invoice/AP schema and posting integration from the accepted policies, validating Kenya tax requirements before coding. The future double-entry accounting ledger remains a separate domain; Sales, payments, integrations, reporting, and the hardware agent remain planned modules.
 
 ## Planned Modules
 

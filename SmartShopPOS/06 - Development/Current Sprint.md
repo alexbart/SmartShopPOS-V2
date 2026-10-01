@@ -118,4 +118,14 @@
 
 **Decision:** Purchase orders, goods receipts, supplier invoices, AP obligations, payments, and accounting journals are separate responsibilities. Three-way matching identifies variance independently of journal posting. Posted invoices are immutable and create the AP obligation; AP settlement is separate. The future double-entry ledger consumes financial events through an explicit integration boundary. eTIMS remains provider-specific, and this checkpoint adds no inventory valuation.
 
-**Open before schema implementation:** PO vs non-PO invoice policy, mismatch/tolerance approval rules, Kenya tax/VAT calculation and snapshots, supplier-number comparison normalization, and multi-currency conversion/functional-currency treatment.
+**Open before schema implementation:** Authoritative Kenya tax/VAT rates, treatment, evidence, and rounding; variance-approval permissions and audit details; and the AP/payment-to-ledger integration contract. The policy decisions are recorded in ADR-015.
+
+## Milestone 17 - Supplier Invoice Policies and Matching Rules
+
+**Current task:** Design-only supplier invoice policy checkpoint (Prompt 019)
+
+**Status:** Accepted MVP policies are documented in ADR-015. No invoice schema, API, AP ledger, payment, or accounting implementation has started.
+
+**Decisions:** PO-backed and separately classified non-PO invoices are supported. Partial invoices aggregate posted invoice quantities by PO line. Mismatches can be captured as Draft; variance approval is required before posting when invoiced exceeds received or price/tax/document totals differ. Quantity above ordered cannot post absent formal PO amendment. The MVP does not allocate invoice lines to individual receipts. Supplier invoice numbers retain their original text and use a normalized duplicate key. The MVP supports KES only; tax amounts from the supplier document are retained and checked against configured calculations.
+
+**Still required before implementation:** Authoritative Kenya tax/VAT configuration and regulatory validation, formal variance-approval permissions/audit details, and AP/payment posting integration contract with the future accounting ledger.

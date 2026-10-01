@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted domain boundaries; detailed implementation policies remain open as listed below.
+Accepted; initial supplier invoice and matching policies are specified by ADR-015.
 
 ## Context
 
@@ -18,15 +18,9 @@ Each invoice will have an immutable organization-scoped internal document number
 
 Accounts Payable is a subledger responsibility, separate from the accounting general ledger. Invoice posting will not directly update account balances or create journal rows in the supplier-invoice foundation. Once a double-entry accounting domain exists, a posted AP financial transaction will cross an explicit, reliable integration boundary into immutable journal posting. eTIMS stays behind a provider/integration boundary and does not define core invoice lifecycle. Supplier invoicing does not create stock movements or implement inventory valuation, COGS, FIFO, or weighted-average costing.
 
-## Open Decisions Before Schema Implementation
+## Policy Follow-up
 
-- Whether the first invoice workflow permits non-PO invoices. PO linkage must not become optional merely through nullable foreign keys.
-- Whether invoice/receipt/PO mismatches can be posted, require approval, or are constrained by tolerances. Matching and discrepancy visibility are required; policy is not yet fixed.
-- Whether invoice lines allocate to individual receipt lines or match against aggregate received quantities per PO line.
-- Kenya VAT/tax calculation, tax categories/rates, snapshots, and input-tax treatment.
-- Case, whitespace, and normalization semantics for uniqueness while retaining the supplier number exactly as supplied.
-- Foreign-currency exchange rates, conversion timing, and functional-currency values for future accounting.
-- The AP open-item and payment-allocation model and its reliable handoff to journal posting.
+ADR-015 resolves the initial non-PO policy, mismatch/approval handling, receipt allocation scope, supplier invoice-number comparison, and MVP currency. Kenya tax configuration and regulatory validation, plus the accounting/AP integration details that depend on the future ledger, remain implementation design work. No decisions in ADR-015 implement invoice or accounting behavior.
 
 ## Consequences
 
